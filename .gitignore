@@ -12,3 +12,11 @@ QueueTix-Consolidated-Build-Brief-*.pdf
 QueueTix-Agent-Handoff-and-Human-in-the-Loop-Rules.docx
 
 /docs/PROGRESS.md
+
+# Local development instructions and notes
+AGENTS.md
+CLAUDE.md
+.agent-local/
+/docs/PROGRESS.md
+QueueTix-Consolidated-Build-Brief*.pdf
+QueueTix-Agent-Handoff*.docx
