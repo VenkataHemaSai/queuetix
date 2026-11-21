@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.cache/
+.env
+.env.*
+!.env.example
+.vercel/
+.agent-local/
+*.log
+QueueTix-Consolidated-Build-Brief-*.pdf
+QueueTix-Agent-Handoff-and-Human-in-the-Loop-Rules.docx
