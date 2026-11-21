@@ -10,3 +10,5 @@ coverage/
 *.log
 QueueTix-Consolidated-Build-Brief-*.pdf
 QueueTix-Agent-Handoff-and-Human-in-the-Loop-Rules.docx
+
+/docs/PROGRESS.md
