@@ -141,7 +141,7 @@ export function SmokePage() {
     ({ status }) => status === "FAIL",
   ).length;
   return (
-    <main className="shell page">
+    <main id="main-content" className="shell page">
       <div className="intro">
         <div>
           <h1>Service checks</h1>

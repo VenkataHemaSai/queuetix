@@ -83,6 +83,7 @@ test("T-CORS-1 only known origins pass Authorization preflight and the actual GE
 test("validates M0 environment without echoing secrets", () => {
   const env = {
     MONGODB_URI: "mongodb://127.0.0.1:27017/tickets_dev",
+    JWT_SECRET: "test-only-secret-at-least-thirty-two-characters",
     CLIENT_ORIGIN: "http://localhost:5173, https://queuetix.example",
   };
   expect(readEnv(env)).toMatchObject({

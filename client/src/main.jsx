@@ -1,29 +1,22 @@
 import { createRoot } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
 import "@fontsource-variable/instrument-sans";
-import { SmokePage } from "./smoke/SmokePage.jsx";
-import { PRODUCT_NAME } from "./product.js";
+import { App } from "./App.jsx";
+import { SessionProvider } from "./features/auth/session.jsx";
 import "./styles.css";
+import "./product.css";
 
-const isSmoke = ["/", "/smoke", "/smoke/"].includes(window.location.pathname);
+const queries = new QueryClient({
+  defaultOptions: { queries: { retry: false, staleTime: 20_000 } },
+});
 
 createRoot(document.getElementById("root")).render(
-  <>
-    <header className="site-header">
-      <div className="shell">
-        <a className="wordmark" href="/smoke">
-          {PRODUCT_NAME}
-        </a>
-      </div>
-    </header>
-    {isSmoke ? (
-      <SmokePage />
-    ) : (
-      <main className="shell page">
-        <h1>Page unavailable</h1>
-        <p>
-          <a href="/smoke">Open service checks</a>
-        </p>
-      </main>
-    )}
-  </>,
+  <BrowserRouter>
+    <QueryClientProvider client={queries}>
+      <SessionProvider>
+        <App />
+      </SessionProvider>
+    </QueryClientProvider>
+  </BrowserRouter>,
 );

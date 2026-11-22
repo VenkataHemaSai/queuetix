@@ -10,6 +10,7 @@ import {
 import { systemClock as clock } from "./lib/clock.js";
 import { connectMongo } from "./lib/db.js";
 import { mongoDiagnostic } from "./lib/diagnostic.js";
+import { initializeModels } from "./modules/models.js";
 
 async function start() {
   try {
@@ -19,7 +20,6 @@ async function start() {
   }
   const env = readEnv(process.env);
   const dbStatus = createDbStatus();
-  const app = createApp({ clientOrigins: env.clientOrigins, clock, dbStatus });
   const started = performance.now();
   const reportFailure = (failure) =>
     console.error("QueueTix database probe failed", JSON.stringify(failure));
@@ -35,6 +35,7 @@ async function start() {
       dbUnavailable(clock, Math.round(performance.now() - started)),
     );
   }
+  let models;
   if (connection) {
     dbStatus.store(
       await runDbSmoke({
@@ -44,9 +45,25 @@ async function start() {
         reportFailure,
       }),
     );
-    await connection.close();
+    if (dbStatus.read().ok) {
+      try {
+        models = await initializeModels(connection);
+      } catch (error) {
+        reportFailure({
+          stage: "initialize models",
+          ...mongoDiagnostic(error, env.mongoUri),
+        });
+      }
+    }
+    if (!models) await connection.close().catch(() => {});
   }
   console.info("QueueTix database probe", JSON.stringify(dbStatus.read()));
+  const app = createApp({
+    clientOrigins: env.clientOrigins,
+    clock,
+    dbStatus,
+    features: { connection, models, env },
+  });
   const host = env.nodeEnv === "production" ? "0.0.0.0" : "localhost";
   const server = app.listen(env.port, host);
   await once(server, "listening");

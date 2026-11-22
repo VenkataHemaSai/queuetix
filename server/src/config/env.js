@@ -21,6 +21,18 @@ const schema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  JWT_SECRET: z
+    .string()
+    .min(32)
+    .refine((value) => value === value.trim()),
+  GOOGLE_CLIENT_ID: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z
+      .string()
+      .regex(/^[\w-]+\.apps\.googleusercontent\.com$/)
+      .optional(),
+  ),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(2).default(0),
 });
 
 export function readEnv(source) {
@@ -34,5 +46,8 @@ export function readEnv(source) {
     mongoUri: result.data.MONGODB_URI,
     nodeEnv: result.data.NODE_ENV,
     port: result.data.PORT,
+    jwtSecret: result.data.JWT_SECRET,
+    googleClientId: result.data.GOOGLE_CLIENT_ID,
+    trustProxy: result.data.TRUST_PROXY_HOPS,
   };
 }
