@@ -5,6 +5,8 @@ import { templates } from "../../../../shared/seat-layout.js";
 import { api } from "../../lib/api.js";
 import { Empty, Failure, Loading, Pagination } from "../../ui.jsx";
 import { SeatMap } from "./SeatMap.jsx";
+import { useSession } from "../auth/session.jsx";
+import { saleState } from "../booking/time.js";
 import {
   formatDate,
   formatPrice,
@@ -119,17 +121,21 @@ function countdown(milliseconds) {
 }
 
 function SaleInfo({ event, serverTime, receivedAt }) {
+  const { user } = useSession();
   const [measured, setMeasured] = useState(receivedAt);
   const left =
     Date.parse(event.saleStartsAt) -
     Date.parse(serverTime) -
     Math.max(0, measured - receivedAt);
-  const counting = event.status === "scheduled" && left > 0;
+  const now = Date.parse(event.saleStartsAt) - left;
+  const sale = saleState(event, now);
+  const counting = sale === "upcoming";
+  const ticking = counting || sale === "open";
   useEffect(() => {
-    if (!counting) return;
+    if (!ticking) return;
     const interval = setInterval(() => setMeasured(performance.now()), 1000);
     return () => clearInterval(interval);
-  }, [counting]);
+  }, [ticking]);
   return (
     <section className="sale-info" aria-labelledby="sale-heading">
       <h2 id="sale-heading">Sale schedule</h2>
@@ -157,7 +163,22 @@ function SaleInfo({ event, serverTime, receivedAt }) {
           </dd>
         </div>
       </dl>
-      <p className="support">Booking is unavailable.</p>
+      {sale === "open" ? (
+        <Link className="primary-action" to={`/events/${event.id}/book`}>
+          View booking options
+        </Link>
+      ) : (
+        <>
+          <p className="support">
+            {sale === "closed"
+              ? "New seat holds are closed."
+              : "Booking is unavailable."}
+          </p>
+          {sale === "closed" && user?.role === "attendee" && (
+            <Link to={`/events/${event.id}/book`}>View existing booking</Link>
+          )}
+        </>
+      )}
     </section>
   );
 }

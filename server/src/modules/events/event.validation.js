@@ -39,11 +39,14 @@ const eventFields = z.strictObject({
 });
 
 function checkEvent(input, context) {
-  if (Date.parse(input.saleStartsAt) >= Date.parse(input.startsAt)) {
+  if (
+    Date.parse(input.startsAt) - Date.parse(input.saleStartsAt) <
+    24 * 60 * 60_000
+  ) {
     field(
       context,
       "saleStartsAt",
-      "Sale start must be before the event starts.",
+      "Sale start must be at least 24 hours before the event starts.",
     );
   }
   const tiers = templates[input.type].tiers;

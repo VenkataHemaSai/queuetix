@@ -59,6 +59,7 @@ export function SessionProvider({ children }) {
       setError(null);
       setNotice(message);
       cache.removeQueries({ queryKey: ["organizer"] });
+      cache.removeQueries({ queryKey: ["booking"] });
     },
     [cache],
   );

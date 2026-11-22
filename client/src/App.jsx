@@ -40,6 +40,22 @@ const Smoke = lazy(() =>
   })),
 );
 
+const BookingPage = lazy(() =>
+  import("./features/booking/BookingPage.jsx").then(({ BookingPage }) => ({
+    default: BookingPage,
+  })),
+);
+const CheckoutPage = lazy(() =>
+  import("./features/booking/CheckoutPage.jsx").then(({ CheckoutPage }) => ({
+    default: CheckoutPage,
+  })),
+);
+const TicketsPage = lazy(() =>
+  import("./features/booking/TicketsPage.jsx").then(({ TicketsPage }) => ({
+    default: TicketsPage,
+  })),
+);
+
 function Header({ smoke }) {
   const { status, user } = useSession();
   const [open, setOpen] = useState(false);
@@ -83,6 +99,11 @@ function Header({ smoke }) {
               Manage events
             </NavLink>
           )}
+          {signedIn && user.role === "attendee" && (
+            <NavLink to="/tickets" onClick={close}>
+              My tickets
+            </NavLink>
+          )}
           {status !== "loading" && (
             <NavLink
               to={signedIn || status === "error" ? "/account" : "/login"}
@@ -110,11 +131,15 @@ export function App() {
       ? "Service checks"
       : pathname.startsWith("/organizer")
         ? "Manage events"
-        : pathname === "/login"
-          ? "Sign in"
-          : pathname === "/account"
-            ? "Account"
-            : "Events";
+        : pathname.startsWith("/checkout/")
+          ? "Checkout"
+          : pathname === "/tickets"
+            ? "My tickets"
+            : pathname === "/login"
+              ? "Sign in"
+              : pathname === "/account"
+                ? "Account"
+                : "Events";
     document.title = `${page} | ${PRODUCT_NAME}`;
   }, [pathname, smoke]);
   return (
@@ -134,6 +159,9 @@ export function App() {
           <Route path="/" element={<Events home />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/events/:id/book" element={<BookingPage />} />
+          <Route path="/checkout/:id" element={<CheckoutPage />} />
+          <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/account" element={<Account />} />
           <Route path="/organizer/events" element={<OrganizerList />} />

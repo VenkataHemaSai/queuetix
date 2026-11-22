@@ -278,8 +278,8 @@ function EventForm({ event, reload, onChange, onSaved, publishing }) {
         <legend>Schedule</legend>
         <p className="support">
           Enter times in your device time zone ({deviceZone}). Public dates use
-          the event time zone. The lobby is scheduled 10 minutes before the
-          sale.
+          the event time zone. Schedule the sale at least 24 hours before the
+          event. The lobby is scheduled 10 minutes before the sale.
         </p>
         <div className="form-pair">
           <Field label="Event starts" name="startsAt" fields={fields}>

@@ -150,6 +150,13 @@ export function createEventService({ Event, Seat, connection, clock }) {
             throw publicationChanged();
           }
           if (event.revision !== revision) throw publicationChanged();
+          if (event.startsAt - event.saleStartsAt < 24 * 60 * 60_000) {
+            throw new HttpError(
+              409,
+              "SALE_LEAD_TIME",
+              "Schedule the sale at least 24 hours before the event starts.",
+            );
+          }
           if (event.saleStartsAt <= now) {
             throw new HttpError(
               409,

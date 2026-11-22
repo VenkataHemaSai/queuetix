@@ -107,7 +107,7 @@ export function Login() {
   );
 }
 
-function SessionGate({ children }) {
+export function SessionGate({ children }) {
   const { status, error, retry, notice } = useSession();
   const { pathname } = useLocation();
   if (status === "signed-in") return children;

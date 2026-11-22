@@ -4,7 +4,15 @@ import { formatPrice } from "./presentation.js";
 
 const cell = 36;
 
-export function SeatMap({ layout, currency, seatState }) {
+const stateText = {
+  selected: "Selected",
+  mine: "Held for you",
+  held: "Held by another attendee",
+  sold: "Sold",
+  available: "Available",
+};
+
+export function SeatMap({ layout, currency, seatState, onPick }) {
   const id = useId();
   const [fit, setFit] = useState(false);
   const seats = useMemo(() => layoutSeats(layout), [layout]);
@@ -32,6 +40,20 @@ export function SeatMap({ layout, currency, seatState }) {
           </li>
         ))}
       </ul>
+      {seatState && (
+        <ul className="tier-legend booking-legend" aria-label="Seat status">
+          {Object.entries(stateText).map(([state, label]) => (
+            <li key={state}>
+              <span
+                className="tier-key"
+                data-booking-state={state}
+                aria-hidden="true"
+              />
+              {label}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="map-stage">{layout.stage}</div>
       {layout.sections.map((section) => {
         const sectionSeats = seats.filter(
@@ -54,7 +76,7 @@ export function SeatMap({ layout, currency, seatState }) {
               aria-label={`${section.name} map`}
             >
               <svg
-                role="img"
+                role={onPick ? "group" : "img"}
                 aria-labelledby={`${svgId}-title`}
                 width={width}
                 height={section.rows.length * cell + 8}
@@ -71,26 +93,73 @@ export function SeatMap({ layout, currency, seatState }) {
                     {letter}
                   </text>
                 ))}
-                {sectionSeats.map(({ label, row, col, tier, seatIndex }) => (
-                  <g
-                    key={seatIndex}
-                    data-seat-index={seatIndex}
-                    data-state={seatState?.[seatIndex]}
-                    transform={`translate(${28 + col * cell}, ${7 + row * cell})`}
-                  >
-                    <rect
-                      width="31"
-                      height="26"
-                      rx="4"
-                      className={`seat-cell tier-${tier}`}
-                    />
-                    <text x="15.5" y="13" dy=".36em" textAnchor="middle">
-                      {section.prefix
-                        ? label.slice(section.prefix.length)
-                        : label}
-                    </text>
-                  </g>
-                ))}
+                {sectionSeats.map(
+                  ({ label, row, col, tier, seatIndex, price }) => {
+                    const seat = seatState?.[seatIndex];
+                    const state = seat?.state;
+                    const pickable = onPick && seat?.pickable;
+                    const activate = () => onPick(seat.id);
+                    return (
+                      <g
+                        key={seatIndex}
+                        data-seat-index={seatIndex}
+                        data-booking-state={state}
+                        className={pickable ? "pickable-seat" : undefined}
+                        role={pickable ? "button" : undefined}
+                        tabIndex={pickable ? 0 : undefined}
+                        aria-pressed={
+                          pickable ? state === "selected" : undefined
+                        }
+                        aria-label={
+                          pickable
+                            ? `Seat ${label}, ${tierNames[tier]}, ${formatPrice(seat.price ?? price, currency)}, ${stateText[state]}`
+                            : undefined
+                        }
+                        onClick={pickable ? activate : undefined}
+                        onKeyDown={
+                          pickable
+                            ? (event) => {
+                                if (
+                                  event.key === "Enter" ||
+                                  event.key === " "
+                                ) {
+                                  event.preventDefault();
+                                  activate();
+                                }
+                              }
+                            : undefined
+                        }
+                        transform={`translate(${28 + col * cell}, ${7 + row * cell})`}
+                      >
+                        <rect
+                          width="31"
+                          height="26"
+                          rx="4"
+                          className={`seat-cell tier-${tier}`}
+                        />
+                        <text x="15.5" y="13" dy=".36em" textAnchor="middle">
+                          {section.prefix
+                            ? label.slice(section.prefix.length)
+                            : label}
+                        </text>
+                        {state === "sold" && (
+                          <path
+                            d="M5 22 L26 4"
+                            className="seat-mark"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {state === "selected" && (
+                          <path
+                            d="m22 20 2 2 4-5"
+                            className="seat-mark"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </g>
+                    );
+                  },
+                )}
               </svg>
             </div>
             <details className="seat-text">
@@ -107,7 +176,30 @@ export function SeatMap({ layout, currency, seatState }) {
                         {formatPrice(rowSeats[0].price, currency)}
                       </strong>
                       <br />
-                      {rowSeats.map(({ label }) => label).join(", ")}
+                      {seatState ? (
+                        <div className="seat-list-controls">
+                          {rowSeats.map(({ label, seatIndex }) => {
+                            const seat = seatState[seatIndex];
+                            if (!seat) return null;
+                            const description = `${label} · ${stateText[seat.state]}`;
+                            return onPick && seat.pickable ? (
+                              <button
+                                key={label}
+                                type="button"
+                                className="secondary-action"
+                                aria-pressed={seat.state === "selected"}
+                                onClick={() => onPick(seat.id)}
+                              >
+                                {description}
+                              </button>
+                            ) : (
+                              <span key={label}>{description}</span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        rowSeats.map(({ label }) => label).join(", ")
+                      )}
                     </li>
                   );
                 })}

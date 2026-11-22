@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const strongKey = z
+  .string()
+  .min(32)
+  .refine((value) => value === value.trim());
+
 function isOrigin(value) {
   try {
     const url = new URL(value);
@@ -33,6 +38,9 @@ const schema = z.object({
       .optional(),
   ),
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(2).default(0),
+  PAYMENT_WEBHOOK_SECRET: strongKey,
+  QR_HMAC_SECRET: strongKey,
+  ENABLE_DEV_TOOLS: z.enum(["true", "false"]).default("false"),
 });
 
 export function readEnv(source) {
@@ -49,5 +57,10 @@ export function readEnv(source) {
     jwtSecret: result.data.JWT_SECRET,
     googleClientId: result.data.GOOGLE_CLIENT_ID,
     trustProxy: result.data.TRUST_PROXY_HOPS,
+    paymentWebhookSecret: result.data.PAYMENT_WEBHOOK_SECRET,
+    qrHmacSecret: result.data.QR_HMAC_SECRET,
+    enableDevTools:
+      result.data.NODE_ENV === "development" &&
+      result.data.ENABLE_DEV_TOOLS === "true",
   };
 }

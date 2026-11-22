@@ -11,6 +11,8 @@ import { systemClock as clock } from "./lib/clock.js";
 import { connectMongo } from "./lib/db.js";
 import { mongoDiagnostic } from "./lib/diagnostic.js";
 import { initializeModels } from "./modules/models.js";
+import { createBooking } from "./modules/booking/index.js";
+import { startExpirySweeper } from "./modules/booking/sweeper.js";
 
 async function start() {
   try {
@@ -58,15 +60,26 @@ async function start() {
     if (!models) await connection.close().catch(() => {});
   }
   console.info("QueueTix database probe", JSON.stringify(dbStatus.read()));
+  const booking =
+    models && createBooking({ ...models, connection, clock, ...env });
   const app = createApp({
     clientOrigins: env.clientOrigins,
     clock,
     dbStatus,
-    features: { connection, models, env },
+    features: { connection, models, env, booking },
   });
   const host = env.nodeEnv === "production" ? "0.0.0.0" : "localhost";
   const server = app.listen(env.port, host);
   await once(server, "listening");
+  if (booking) {
+    const timer = startExpirySweeper(booking.sweepExpired, (error) => {
+      console.error(
+        "QueueTix expiry sweep failed",
+        JSON.stringify(mongoDiagnostic(error, env.mongoUri)),
+      );
+    });
+    server.once("close", () => clearInterval(timer));
+  }
   console.info(`QueueTix API listening on port ${env.port}`);
 }
 

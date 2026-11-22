@@ -50,7 +50,7 @@ export function createApp({
       callback(null, {
         origin: allowedOrigins.has(origin) ? origin : false,
         methods: featureRequest
-          ? ["GET", "HEAD", "POST", "PATCH"]
+          ? ["GET", "HEAD", "POST", "PATCH", "PUT", "DELETE"]
           : ["GET", "HEAD"],
         allowedHeaders: featureRequest
           ? ["Authorization", "Content-Type"]
@@ -93,8 +93,7 @@ export function createApp({
     response.json({ ok: true });
   });
 
-  if (features)
-    app.use(express.json({ limit: "24kb" }), featureRoutes(features, clock));
+  if (features) app.use(featureRoutes(features, clock));
 
   app.use((_request, response) =>
     sendError(response, 404, "NOT_FOUND", "Endpoint not found."),
@@ -117,6 +116,13 @@ export function createApp({
         413,
         "BODY_TOO_LARGE",
         "Request body is too large.",
+      );
+    if (error.type === "encoding.unsupported")
+      return sendError(
+        response,
+        415,
+        "UNSUPPORTED_ENCODING",
+        "Send an uncompressed request.",
       );
     if (error.code === "TXN_COMMIT_UNCONFIRMED") {
       return sendError(
