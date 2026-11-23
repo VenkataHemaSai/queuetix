@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "../../lib/api.js";
+import { api, stream } from "../../lib/api.js";
 
 const Session = createContext(null);
 const key = "queuetix.session";
@@ -120,6 +120,19 @@ export function SessionProvider({ children }) {
     [session, clear],
   );
 
+  const connect = useCallback(
+    async (path, options) => {
+      try {
+        return await stream(path, { ...options, token: session?.token });
+      } catch (failure) {
+        if (failure.status === 401 && liveToken.current === session?.token)
+          clear(failure.code === "SESSION_EXPIRED" ? expired : failure.message);
+        throw failure;
+      }
+    },
+    [session, clear],
+  );
+
   function retry() {
     setStatus("loading");
     setAttempt((value) => value + 1);
@@ -135,6 +148,7 @@ export function SessionProvider({ children }) {
         signIn,
         signOut: clear,
         request,
+        connect,
         retry,
       }}
     >

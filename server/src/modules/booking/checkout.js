@@ -29,6 +29,8 @@ export function createCheckout({
   retireHold,
   qrHmacSecret,
   clock,
+  queueEntries,
+  publish,
 }) {
   async function orderForKey(scope, signature, session = null) {
     const record = await OrderKey.findOne(scope).session(session).lean();
@@ -200,15 +202,22 @@ export function createCheckout({
   }
 
   async function succeed(order, amount, txn) {
-    const { session, now } = txn;
+    const { session, now, afterCommit } = txn;
     const { _id: orderId, eventId, userId, holdId, passId, seatIds } = order;
     if (order.status === "paid") throw new Refund("duplicate_payment");
     if (order.status !== "pending") throw new Refund("order_closed");
     const event = await Event.findById(eventId)
-      .select("status")
+      .select("status startsAt")
       .session(session)
       .lean();
     if (event.status === "ended") throw new Refund("event_ended");
+    if (queueEntries && event.startsAt <= now) {
+      await Event.updateOne(
+        { _id: eventId, status: event.status },
+        { $inc: { queueRevision: 1 } },
+        { session },
+      );
+    }
     const owner = { eventId, userId };
     const otherHold = await Hold.findOne({
       ...owner,
@@ -274,6 +283,25 @@ export function createCheckout({
       { $set: { status: "expired" } },
       { session },
     );
+    if (queueEntries)
+      await queueEntries.updateOne(
+        {
+          ...owner,
+          status: {
+            $in: [
+              "waiting",
+              "abandoned",
+              "expired",
+              "admitted",
+              "expired_soldout",
+            ],
+          },
+        },
+        { $set: { status: "completed" } },
+        { session },
+      );
+    if (publish)
+      afterCommit(() => publish(eventId, "seat:sold", { userId, seatIds }));
     return paid;
   }
 

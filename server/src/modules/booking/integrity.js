@@ -1,5 +1,8 @@
 import { missingEvent, sameId } from "./rules.js";
 
+export const seatInventoryIssue =
+  "Seat counts do not match the event inventory.";
+
 function groupBy(records, key) {
   const groups = new Map();
   for (const record of records) {
@@ -17,6 +20,8 @@ export function createIntegrity({
   Order,
   Ticket,
   Quota,
+  Pass,
+  queueEntries,
   transaction,
 }) {
   return function verifyEventIntegrity(eventId, { preSweep = false } = {}) {
@@ -44,7 +49,7 @@ export function createIntegrity({
           ({ status }) => !["available", "held", "sold"].includes(status),
         )
       ) {
-        errors.push("Seat counts do not match the event inventory.");
+        errors.push(seatInventoryIssue);
       }
       for (const order of orders) {
         for (const seatId of order.seatIds.map(String)) {
@@ -152,6 +157,62 @@ export function createIntegrity({
         ) {
           errors.push(`User ${user} has inconsistent booking quota.`);
         }
+      }
+      if (queueEntries) {
+        const entries = await queueEntries
+          .find({ eventId })
+          .session(session)
+          .lean();
+        const activePasses = await Pass.find({
+          eventId,
+          status: "active",
+          expiresAt: { $gt: now },
+        })
+          .session(session)
+          .lean();
+        const passById = new Map(
+          activePasses.map((pass) => [String(pass._id), pass]),
+        );
+        const numbers = new Set();
+        for (const entry of entries) {
+          const user = String(entry.userId);
+          const paid = paidByUser.has(user);
+          if (entry.number != null) {
+            if (
+              !Number.isSafeInteger(entry.number) ||
+              entry.number < 1 ||
+              (event.nextNumber != null && entry.number >= event.nextNumber) ||
+              numbers.has(entry.number)
+            )
+              errors.push("Queue contains an invalid or duplicate number.");
+            numbers.add(entry.number);
+          }
+          if (
+            entry.status === "waiting" &&
+            !(entry.number > event.admittedUpTo)
+          )
+            errors.push(
+              "Waiting entry is at or behind the admission watermark.",
+            );
+          if (entry.rejoinCount < 0 || entry.rejoinCount > 1)
+            errors.push("Queue entry has an invalid rejoin count.");
+          if (entry.status === "completed" && !paid)
+            errors.push("Completed queue entry lacks a paid order.");
+          if (paid && entry.status !== "completed")
+            errors.push("Paid user still has an incomplete queue entry.");
+          if (
+            entry.status === "admitted" &&
+            !preSweep &&
+            !sameId(passById.get(String(entry.passId))?.userId, entry.userId) &&
+            !(
+              event.status === "sold_out" &&
+              (heldByUser.get(user) ?? []).some((hold) => hold.expiresAt > now)
+            )
+          )
+            errors.push("Admitted queue entry lacks its active pass.");
+        }
+        if (event.status === "sold_out" && activePasses.length)
+          errors.push("Sold-out event still has active passes.");
       }
       return errors;
     });

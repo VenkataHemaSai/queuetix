@@ -22,6 +22,7 @@ const pass = new Schema({
 });
 pass.index({ eventId: 1, userId: 1 }, active);
 pass.index({ status: 1, expiresAt: 1 });
+pass.index({ eventId: 1, status: 1, expiresAt: 1 });
 
 const quota = new Schema({
   ...owner,
@@ -49,6 +50,7 @@ hold.index(
   },
 );
 hold.index({ status: 1, expiresAt: 1 });
+hold.index({ eventId: 1, status: 1, expiresAt: 1 });
 
 const line = new Schema(
   { seatId: ref, label: string, section: string, tier: string, price: amount },
@@ -73,6 +75,7 @@ const order = new Schema(
 );
 order.index({ userId: 1, idempotencyKey: 1 }, { unique: true });
 order.index({ holdId: 1 }, { unique: true });
+order.index({ eventId: 1, status: 1 });
 order.index(
   { eventId: 1, userId: 1 },
   { unique: true, partialFilterExpression: { status: "paid" } },

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { tierNames } from "../../../../shared/seat-layout.js";
 import { api } from "../../lib/api.js";
@@ -120,7 +120,8 @@ function SuggestionForm({ event, disabled, suggest, suggestions, select }) {
 
 function Booking() {
   const { id } = useParams();
-  const { user, request } = useSession();
+  const { user, request, connect } = useSession();
+  const cache = useQueryClient();
   const navigate = useNavigate();
   const base = `/events/${id}`;
   const [chosen, setChosen] = useState([]);
@@ -131,10 +132,12 @@ function Booking() {
   const [lastHold, setLastHold] = useState(null);
   const [lastPassExpired, setLastPassExpired] = useState(false);
   const [holdCooldown, setHoldCooldown] = useState(0);
+  const [seatLive, setSeatLive] = useState(false);
   const active = useRef(false);
   const intent = useRef(null);
   const eventQuery = useQuery({
     queryKey: ["event", id],
+    refetchOnMount: "always",
     queryFn: async ({ signal }) => ({
       ...(await api(base, { signal })),
       receivedAt: performance.now(),
@@ -175,8 +178,48 @@ function Booking() {
     queryKey: ["booking", user.id, id, "seats"],
     queryFn: ({ signal }) => request(`${base}/seats`, { signal }),
     enabled: passActive,
-    refetchInterval: passActive ? 3000 : false,
+    refetchInterval: passActive && !seatLive ? 3000 : false,
   });
+  useEffect(() => {
+    if (!passActive) return;
+    const controller = new AbortController();
+    const key = ["booking", user.id, id];
+    function endPass(expired) {
+      controller.abort();
+      setSeatLive(false);
+      if (expired) setLastPassExpired(true);
+      cache.setQueryData(
+        key,
+        (previous) => previous && { ...previous, pass: null },
+      );
+      void refreshBooking();
+    }
+    void connect("/stream/seats/" + id, {
+      signal: controller.signal,
+      onDisconnect() {
+        setSeatLive(false);
+      },
+      onMessage(message) {
+        if (!message.data) return;
+        if (["pass:expired", "order:confirmed"].includes(message.event)) {
+          endPass(message.event === "pass:expired");
+          return;
+        }
+        const data = JSON.parse(message.data);
+        if (!Array.isArray(data.seats)) return;
+        cache.setQueryData([...key, "seats"], { seats: data.seats });
+        setSeatLive(true);
+      },
+    }).catch((failure) => {
+      if (controller.signal.aborted) return;
+      if (failure.code === "PASS_REQUIRED") endPass(true);
+      else setSeatLive(false);
+    });
+    return () => {
+      controller.abort();
+      setSeatLive(false);
+    };
+  }, [passActive, id, user.id, connect, cache, refreshBooking]);
   const limit = state?.maxSeatsPerUser ?? 4;
   const inventoryEmpty = inventory.data?.seats.length === 0;
   const showSelection = canChoose && !inventoryEmpty;
@@ -358,6 +401,9 @@ function Booking() {
           {liveHold ? " Your current hold is still valid." : ""}
         </p>
       )}
+      {!passActive && sale !== "closed" && order?.status !== "paid" && (
+        <Link to={base + "/queue"}>Open waiting room</Link>
+      )}
       {sale !== "open" && (
         <p className="notice" role="status">
           {sale === "closed"
@@ -395,8 +441,10 @@ function Booking() {
               {editing ? "Change seats" : "Choose seats"}
             </h2>
             <p className="support">
-              Choose up to {limit} seats. Availability refreshes every three
-              seconds while your pass is active.
+              Choose up to {limit} seats.{" "}
+              {seatLive
+                ? "Availability updates live."
+                : "Availability refreshes every three seconds while your pass is active."}
             </p>
             {inventory.isPending && <Loading>Loading seats…</Loading>}
             {(inventory.isError || inventoryEmpty) && (
@@ -451,6 +499,10 @@ function Booking() {
               <p className="booking-total">
                 <span>Total</span>
                 <strong>{formatPrice(total, event.currency)}</strong>
+              </p>
+              <p className="sr-only" role="status">
+                {selected.length} seats selected. Total{" "}
+                {formatPrice(total, event.currency)}.
               </p>
               <div className="actions">
                 <button

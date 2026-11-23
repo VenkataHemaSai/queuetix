@@ -18,10 +18,15 @@ Google Identity Services supplies an ID token that Express verifies for QueueTix
 
 Organizers edit their own drafts and publish using a MongoDB transaction. Publishing writes the scheduled event and the generated seats together. A shared layout generator keeps labels, aisle columns and indexes consistent with the SVG preview. Public event routes omit drafts, simulations and all inventory state. Only the read-only layout and configured prices appear in the preview.
 
+## M2 and M3
+
+- M2 uses database passes, transactional holds and quotas, mock checkout, and signed tickets. Replacement preserves expiry. Reclaim and retirement use hold ownership and conditional transitions. Orders retain their exact hold and pass, and the verifier allows legitimate pending history while checking paid ownership.
+- M3 freezes lobby count and seed on the same event row that joins update. It orders frozen users by SHA-256 of seed and user ID, writes idempotent numbering batches, and checks assignments before opening. Late joins and rejoins allocate a number in the membership transaction.
+- The admission controller caps a batch by free passes and reclaimable stock. It advances the watermark with the admitted entries and inherited M2 passes in one transaction. An unpassed abandonment can recover its number by writing the same event row. A passed entry can explicitly rejoin once.
+- Presence and recent admission counts live in process memory. Authenticated activity refreshes presence. The controller admits connected users, waits for protected users, and abandons timed-out users in order. Outbound SSE heartbeats never refresh presence. Restart protection gives waiters 45 seconds to reconnect without marking them connected.
+- Authenticated queue and seat streams publish committed changes. A reconnect reads a fresh snapshot. The seat stream requires an active pass and closes when it expires or a successful payment consumes it. The displayed seat count uses persisted availability, while admission also counts reclaimable seats.
+- Recovery finishes interrupted opening, catches up the scheduler and reconciles expired holds, passes and sold-out entries before readiness. At event start, participation closes immediately. Existing qualifying holds and pending settlements keep their M2 rights until a guarded event-ending transition can commit.
+
 ## Later milestones
 
-- M2 introduces passes through a shared service, transactional holds and quotas, mock checkout, and tickets. Replace preserves expiry. Reclaim and retirement use hold ownership and conditional transitions. §§20.14.3–5 require scoped request fingerprints and strict seat validation, exact hold/pass references, safe late payment and later-pass handling, and a verifier that checks paid ownership while allowing legitimate pending history.
-- M3 adds restart-safe seeded opening, transactional numbering, strict admission order, one rejoin per event, approximate position, and authorized SSE. §20.14.6 sets 15-second client pings, a 30-second presence window, and 45-second disconnect grace. Outbound heartbeats keep the transport open.
-- M4 adds recovery, rate limits, scanner and admin tools. M5 adds isolated, throttled proof runs and truthful coverage claims. Recheck actual free-tier limits at deployment.
-
-No design question blocks local M0. Production URLs, Atlas transaction support, proxy streaming and cold-start latency are deployment acceptance evidence.
+M4 adds operational hardening, rate limits, scanning and administrative views. M5 adds isolated, throttled proof runs. Hosted proxy streaming, cold-start timing and throughput need measurements in the configured environment.

@@ -56,10 +56,11 @@ export function createHolds({
   clock,
   transaction,
   activePass,
+  publish,
 }) {
   const keyFilter = (userId, idempotencyKey) => ({ userId, idempotencyKey });
 
-  async function retireHold(holdId, status, { session, now }) {
+  async function retireHold(holdId, status, { session, now, afterCommit }) {
     const filter = {
       _id: holdId,
       ...active,
@@ -72,8 +73,14 @@ export function createHolds({
     ).lean();
     if (!hold) return null;
     const { eventId, userId } = hold;
+    const owned = { eventId, holdId, status: "held" };
+    const seatIds =
+      publish &&
+      (await Seat.find(owned).select("_id").session(session).lean()).map(
+        ({ _id }) => _id,
+      );
     await Seat.updateMany(
-      { eventId, holdId, status: "held" },
+      owned,
       { $set: { status: "available", holdId: null, holdExpiresAt: null } },
       { session },
     );
@@ -87,6 +94,8 @@ export function createHolds({
       [{ eventId, userId, holdId, action: `hold.${status}`, at: now }],
       { session },
     );
+    if (publish)
+      afterCommit(() => publish(eventId, "seat:released", { userId, seatIds }));
     return { ...hold, status };
   }
 
@@ -104,7 +113,7 @@ export function createHolds({
 
   async function claim(
     { event, userId, ids, passId, expiresAt, key, signature },
-    { session, now },
+    { session, now, afterCommit },
   ) {
     const owner = { eventId: event._id, userId };
     const holdId = newId();
@@ -167,6 +176,10 @@ export function createHolds({
       [{ ...owner, holdId, action: "hold.created", at: now }],
       { session },
     );
+    if (publish)
+      afterCommit(() =>
+        publish(event._id, "seat:held", { userId, seatIds: ids }),
+      );
     return hold.toObject();
   }
 

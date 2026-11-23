@@ -163,18 +163,19 @@ function SaleInfo({ event, serverTime, receivedAt }) {
           </dd>
         </div>
       </dl>
-      {sale === "open" ? (
-        <Link className="primary-action" to={`/events/${event.id}/book`}>
-          View booking options
-        </Link>
+      {sale !== "closed" ? (
+        <>
+          {sale !== "open" && (
+            <p className="support">Booking is unavailable.</p>
+          )}
+          <Link className="primary-action" to={`/events/${event.id}/queue`}>
+            View waiting room
+          </Link>
+        </>
       ) : (
         <>
-          <p className="support">
-            {sale === "closed"
-              ? "New seat holds are closed."
-              : "Booking is unavailable."}
-          </p>
-          {sale === "closed" && user?.role === "attendee" && (
+          <p className="support">New seat holds are closed.</p>
+          {user?.role === "attendee" && (
             <Link to={`/events/${event.id}/book`}>View existing booking</Link>
           )}
         </>

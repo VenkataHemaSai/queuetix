@@ -30,7 +30,7 @@ const suggestInput = z.strictObject({
   count: z.coerce.number().int().min(1).max(4),
 });
 
-function holdView(hold) {
+export function holdView(hold) {
   return (
     hold && {
       id: String(hold._id),
@@ -42,7 +42,7 @@ function holdView(hold) {
   );
 }
 
-function orderView(order) {
+export function orderView(order) {
   return (
     order && {
       id: String(order._id),

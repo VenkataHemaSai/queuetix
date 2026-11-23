@@ -38,6 +38,10 @@ export const eventSchema = new Schema(
     lobbyCount: { type: Number, default: null },
     nextNumber: { type: Number, default: null },
     admittedUpTo: { type: Number, default: 0 },
+    queueRevision: { type: Number, default: 0 },
+    openingStartedAt: Date,
+    onSaleAt: Date,
+    soldOutCleanedAt: Date,
     totalSeats: { type: Number, default: 0 },
     isDemo: { type: Boolean, default: false },
     isSimulation: { type: Boolean, default: false },
@@ -47,5 +51,7 @@ export const eventSchema = new Schema(
 );
 
 eventSchema.index({ status: 1, saleStartsAt: 1 });
+eventSchema.index({ status: 1, lobbyOpensAt: 1 });
+eventSchema.index({ status: 1, startsAt: 1 });
 eventSchema.index({ organizerId: 1, updatedAt: -1, _id: -1 });
 eventSchema.index({ isSimulation: 1, startsAt: 1, _id: 1 });

@@ -1,4 +1,5 @@
 import { readApiOrigin } from "../smoke/probes.js";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 const origin = readApiOrigin(import.meta.env.VITE_API_URL);
 
@@ -7,6 +8,52 @@ export class ApiError extends Error {
     super(message);
     Object.assign(this, { status, code, fields, retryAfter });
   }
+}
+
+export async function stream(
+  path,
+  { token, signal, onMessage, onOpen, onDisconnect },
+) {
+  if (!origin) throw new ApiError("The service is not configured.", 503);
+  let delay = 1000;
+  return fetchEventSource(origin + path, {
+    signal,
+    openWhenHidden: true,
+    headers: { Authorization: "Bearer " + token },
+    credentials: "omit",
+    cache: "no-store",
+    redirect: "error",
+    async onopen(response) {
+      if (
+        response.ok &&
+        response.headers.get("Content-Type")?.includes("text/event-stream")
+      ) {
+        delay = 1000;
+        onOpen?.();
+        return;
+      }
+      const { error } = await response.json().catch(() => ({}));
+      throw new ApiError(
+        error?.message ?? "The live connection is unavailable.",
+        response.status,
+        error?.code,
+        error?.fields,
+        Number(response.headers.get("Retry-After")) || 0,
+      );
+    },
+    onmessage: onMessage,
+    onclose() {
+      throw new Error("The live connection closed.");
+    },
+    onerror(error) {
+      onDisconnect?.(error);
+      if (error.status >= 400 && error.status < 500 && error.status !== 429)
+        throw error;
+      const retry = Math.max(delay, (error.retryAfter ?? 0) * 1000);
+      delay = Math.min(15000, delay * 2);
+      return retry;
+    },
+  });
 }
 
 export async function api(path, { method = "GET", body, token, signal } = {}) {

@@ -2,12 +2,18 @@ import { userSchema } from "./auth/user.model.js";
 import { eventSchema } from "./events/event.model.js";
 import { seatSchema } from "./events/seat.model.js";
 import { bookingSchemas } from "./booking/models.js";
+import { queueEntrySchema } from "./queue/model.js";
 
 export async function initializeModels(connection) {
   const models = {
     User: connection.model("User", userSchema),
     Event: connection.model("Event", eventSchema),
     Seat: connection.model("Seat", seatSchema),
+    QueueEntry: connection.model(
+      "QueueEntry",
+      queueEntrySchema,
+      "queueEntries",
+    ),
     ...Object.fromEntries(
       Object.entries(bookingSchemas).map(([name, schema]) => [
         name,

@@ -50,6 +50,11 @@ const CheckoutPage = lazy(() =>
     default: CheckoutPage,
   })),
 );
+const WaitingRoom = lazy(() =>
+  import("./features/queue/WaitingRoom.jsx").then(({ WaitingRoom }) => ({
+    default: WaitingRoom,
+  })),
+);
 const TicketsPage = lazy(() =>
   import("./features/booking/TicketsPage.jsx").then(({ TicketsPage }) => ({
     default: TicketsPage,
@@ -160,6 +165,7 @@ export function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/events/:id/book" element={<BookingPage />} />
+          <Route path="/events/:id/queue" element={<WaitingRoom />} />
           <Route path="/checkout/:id" element={<CheckoutPage />} />
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/login" element={<Login />} />

@@ -6,9 +6,10 @@ import { eventRoutes } from "./events/event.routes.js";
 import { createEventService } from "./events/event.service.js";
 import { createBooking } from "./booking/index.js";
 import { bookingRoutes, bookingWebhooks } from "./booking/routes.js";
+import { queueRoutes } from "./queue/routes.js";
 
 export function featureRoutes(
-  { models, connection, env, verifyGoogle, booking: initializedBooking },
+  { models, connection, env, verifyGoogle, booking: initializedBooking, queue },
   clock,
 ) {
   const router = Router();
@@ -30,6 +31,7 @@ export function featureRoutes(
         "/orders",
         "/tickets",
         "/payments",
+        "/stream",
       ],
       () => {
         throw new HttpError(
@@ -60,5 +62,6 @@ export function featureRoutes(
     eventRoutes(createEventService({ ...models, connection, clock }), session),
   );
   if (booking) router.use(bookingRoutes(booking, session, mock, devTools));
+  if (booking && queue) router.use(queueRoutes(queue, booking, session));
   return router;
 }

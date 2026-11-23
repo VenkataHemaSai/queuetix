@@ -20,6 +20,7 @@ import { TicketsPage } from "./TicketsPage.jsx";
 vi.mock("../../lib/api.js", async (original) => ({
   ...(await original()),
   api: vi.fn(),
+  stream: vi.fn(async () => {}),
 }));
 vi.mock("qrcode", () => ({
   default: { toDataURL: vi.fn(async () => "data:image/png;base64,test") },

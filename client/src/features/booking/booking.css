@@ -153,6 +153,9 @@
   display: none;
 }
 @media (max-width: 1023px) {
+  :root:has(.page-with-selection) {
+    scroll-padding-block-end: calc(96px + env(safe-area-inset-bottom));
+  }
   .page-with-selection {
     padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
