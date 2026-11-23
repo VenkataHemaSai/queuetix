@@ -13,6 +13,10 @@ import { mongoDiagnostic } from "./lib/diagnostic.js";
 import { initializeModels } from "./modules/models.js";
 import { createQueueRuntime } from "./modules/queue/index.js";
 import { startQueueJobs } from "./modules/queue/jobs.js";
+import {
+  createRazorpay,
+  startRazorpayJobs,
+} from "./modules/payments/razorpay.js";
 
 async function start() {
   try {
@@ -72,6 +76,15 @@ async function start() {
     if (!models) await connection.close().catch(() => {});
   }
   console.info("QueueTix database probe", JSON.stringify(dbStatus.read()));
+  const razorpay =
+    runtime &&
+    env.razorpay &&
+    createRazorpay({
+      models,
+      booking: runtime.booking,
+      clock,
+      config: env.razorpay,
+    });
   const app = createApp({
     clientOrigins: env.clientOrigins,
     clock,
@@ -82,6 +95,7 @@ async function start() {
       env,
       booking: runtime?.booking,
       queue: runtime?.queue,
+      razorpay,
     },
   });
   const host = env.nodeEnv === "production" ? "0.0.0.0" : "localhost";
@@ -95,6 +109,17 @@ async function start() {
       );
     });
     server.once("close", stopJobs);
+  }
+  if (razorpay) {
+    const stopGateway = startRazorpayJobs(razorpay, (error) =>
+      console.error(
+        "QueueTix Test Mode reconciliation",
+        JSON.stringify({
+          code: error.code ?? error.name,
+        }),
+      ),
+    );
+    server.once("close", stopGateway);
   }
   console.info(`QueueTix API listening on port ${env.port}`);
 }

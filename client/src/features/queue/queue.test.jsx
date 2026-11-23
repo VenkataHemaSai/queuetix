@@ -11,7 +11,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { SessionProvider } from "../auth/session.jsx";
-import { api, stream } from "../../lib/api.js";
+import { api, ApiError, stream } from "../../lib/api.js";
 import { WaitingRoom } from "./WaitingRoom.jsx";
 
 vi.mock("../../lib/api.js", async (original) => ({
@@ -153,4 +153,25 @@ test("a delayed queue refresh cannot replace a newer streamed position", async (
   );
   expect(screen.getByText("About #2")).toBeTruthy();
   expect(screen.queryByText("About #6")).toBeNull();
+});
+
+test("queue join respects Retry-After without sending another request automatically", async () => {
+  show({ ...state, entry: null, approximatePosition: null });
+  const join = await screen.findByRole("button", { name: "Join waiting room" });
+  const original = api.getMockImplementation();
+  api.mockImplementation((path, options) => {
+    if (path.endsWith("/join"))
+      return Promise.reject(
+        new ApiError("Please wait to join.", 429, "RATE_LIMITED", undefined, 1),
+      );
+    return original(path, options);
+  });
+  fireEvent.click(join);
+  await screen.findByRole("alert");
+  expect(join.disabled).toBe(true);
+  fireEvent.click(join);
+  await waitFor(() => expect(join.disabled).toBe(false), { timeout: 2000 });
+  expect(
+    api.mock.calls.filter(([path]) => path.endsWith("/join")),
+  ).toHaveLength(1);
 });

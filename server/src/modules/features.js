@@ -7,9 +7,21 @@ import { createEventService } from "./events/event.service.js";
 import { createBooking } from "./booking/index.js";
 import { bookingRoutes, bookingWebhooks } from "./booking/routes.js";
 import { queueRoutes } from "./queue/routes.js";
+import { dashboardRoutes } from "./operations/dashboard.js";
+import { scannerRoutes } from "./operations/scanner.js";
+import { createRazorpay } from "./payments/razorpay.js";
+import { razorpayRoutes, registerRazorpayWebhook } from "./payments/routes.js";
 
 export function featureRoutes(
-  { models, connection, env, verifyGoogle, booking: initializedBooking, queue },
+  {
+    models,
+    connection,
+    env,
+    verifyGoogle,
+    booking: initializedBooking,
+    queue,
+    razorpay,
+  },
   clock,
 ) {
   const router = Router();
@@ -32,6 +44,8 @@ export function featureRoutes(
         "/tickets",
         "/payments",
         "/stream",
+        "/staff",
+        "/operations",
       ],
       () => {
         throw new HttpError(
@@ -49,6 +63,13 @@ export function featureRoutes(
       createBooking({ ...models, connection, clock, ...env }));
   const mock =
     booking && bookingWebhooks(router, booking, env.paymentWebhookSecret);
+  const gateway =
+    booking &&
+    env.paymentProvider === "razorpay" &&
+    env.razorpay &&
+    (razorpay ??
+      createRazorpay({ models, booking, clock, config: env.razorpay }));
+  if (gateway) registerRazorpayWebhook(router, gateway);
   router.use(express.json({ limit: "24kb" }));
   const auth = createAuthService({
     User: models.User,
@@ -61,7 +82,25 @@ export function featureRoutes(
   router.use(
     eventRoutes(createEventService({ ...models, connection, clock }), session),
   );
-  if (booking) router.use(bookingRoutes(booking, session, mock, devTools));
+  if (booking) {
+    router.use(
+      bookingRoutes(
+        booking,
+        session,
+        mock,
+        devTools,
+        clock,
+        models,
+        Boolean(gateway),
+      ),
+    );
+    router.use(
+      scannerRoutes({ models, clock, session, qrHmacSecret: env.qrHmacSecret }),
+    );
+  }
+  if (gateway) router.use(razorpayRoutes(gateway, booking, session, clock));
   if (booking && queue) router.use(queueRoutes(queue, booking, session));
+  if (booking && queue)
+    router.use(dashboardRoutes({ models, booking, queue, clock, session }));
   return router;
 }

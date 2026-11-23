@@ -198,6 +198,7 @@ export function createInventory({
           {
             id: String(ticket._id),
             status: ticket.status,
+            scannedAt: ticket.scannedAt,
             qrPayload: ticket.qrPayload,
             event: {
               id: String(ticket.eventId),

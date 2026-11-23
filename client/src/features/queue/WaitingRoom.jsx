@@ -138,6 +138,15 @@ function useWaitingRoom(id) {
         if (rejoin) intent.current = null;
       } catch (failure) {
         if (controller.signal.aborted) return;
+        if (failure.status === 429 && failure.retryAfter > 0) {
+          setOpening(false);
+          setError(failure);
+          action.current.timer = setTimeout(() => {
+            action.current = null;
+            setBusy(false);
+          }, failure.retryAfter * 1000);
+          return;
+        }
         if (failure.code === "SALE_OPENING") {
           setOpening(true);
           action.current.timer = setTimeout(

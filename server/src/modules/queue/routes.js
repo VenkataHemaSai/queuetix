@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { validate } from "../../lib/http.js";
+import { clientIpKey, requestLimit } from "../../lib/rate-limit.js";
 import { eventId } from "../events/event.validation.js";
 import { fail } from "../booking/rules.js";
 import { createQueueStreams } from "./streams.js";
@@ -28,12 +29,17 @@ export function queueRoutes(queue, booking, session) {
   const id = (request) => validate(eventId, request.params.id);
   const user = (request) => request.user._id;
   const base = "/events/:id/queue";
-  router.post(base + "/join", attendee, async (req, res) =>
+  const joinLimit = requestLimit(queue.clock, {
+    limit: 5,
+    key: clientIpKey,
+    message: "Too many queue joins. Try again shortly.",
+  });
+  router.post(base + "/join", attendee, joinLimit, async (req, res) =>
     res.json({
       entry: entryView(await queue.join(id(req), user(req))),
     }),
   );
-  router.post(base + "/rejoin", attendee, async (req, res) =>
+  router.post(base + "/rejoin", attendee, joinLimit, async (req, res) =>
     res.json({
       entry: entryView(
         await queue.rejoin(

@@ -27,6 +27,10 @@ Organizers edit their own drafts and publish using a MongoDB transaction. Publis
 - Authenticated queue and seat streams publish committed changes. A reconnect reads a fresh snapshot. The seat stream requires an active pass and closes when it expires or a successful payment consumes it. The displayed seat count uses persisted availability, while admission also counts reclaimable seats.
 - Recovery finishes interrupted opening, catches up the scheduler and reconciles expired holds, passes and sold-out entries before readiness. At event start, participation closes immediately. Existing qualifying holds and pending settlements keep their M2 rights until a guarded event-ending transition can commit.
 
-## Later milestones
+## M4
 
-M4 adds operational hardening, rate limits, scanning and administrative views. M5 adds isolated, throttled proof runs. Hosted proxy streaming, cold-start timing and throughput need measurements in the configured environment.
+- The queue and hold routes apply bounded process-local limits. Client IP comes from Express and the configured `TRUST_PROXY_HOPS`. Limits reset on restart.
+- Staff can redeem tickets for explicitly assigned events. The scanner verifies the existing HMAC payload and atomically records first use. Organizers see operations data for their own events. Administrators manage staff assignments and may inspect published events. Dashboard counts use recorded passes and live expiry deadlines.
+- Mock is the default payment provider. Razorpay Test Mode uses stable receipts to map existing QueueTix orders to gateway orders. Checkout signatures and signed raw webhooks lead to captured-payment verification before the existing booking transaction runs. Refund intents commit with the booking decision and reconcile outside MongoDB transactions with a stable idempotency key.
+
+M5 adds isolated, throttled proof runs. Hosted proxy behavior, streaming, cold-start timing and throughput require measurements in the configured environment.

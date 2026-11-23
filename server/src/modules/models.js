@@ -3,6 +3,7 @@ import { eventSchema } from "./events/event.model.js";
 import { seatSchema } from "./events/seat.model.js";
 import { bookingSchemas } from "./booking/models.js";
 import { queueEntrySchema } from "./queue/model.js";
+import { paymentGatewaySchemas } from "./payments/models.js";
 
 export async function initializeModels(connection) {
   const models = {
@@ -15,14 +16,16 @@ export async function initializeModels(connection) {
       "queueEntries",
     ),
     ...Object.fromEntries(
-      Object.entries(bookingSchemas).map(([name, schema]) => [
-        name,
-        connection.model(
+      Object.entries({ ...bookingSchemas, ...paymentGatewaySchemas }).map(
+        ([name, schema]) => [
           name,
-          schema,
-          name === "Quota" ? "userQuotas" : undefined,
-        ),
-      ]),
+          connection.model(
+            name,
+            schema,
+            name === "Quota" ? "userQuotas" : undefined,
+          ),
+        ],
+      ),
     ),
   };
   await Promise.all(Object.values(models).map((model) => model.init()));

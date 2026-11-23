@@ -23,11 +23,13 @@ export function createCheckout({
   Order,
   OrderKey,
   Payment,
+  GatewayRefund,
   Ticket,
   AuditLog,
   transaction,
   retireHold,
   qrHmacSecret,
+  paymentProvider = "mock",
   clock,
   queueEntries,
   publish,
@@ -103,6 +105,7 @@ export function createCheckout({
               })),
               amount: seats.reduce((total, { price }) => total + price, 0),
               currency: event.currency,
+              paymentProvider,
               idempotencyKey,
               requestFingerprint,
             },
@@ -150,6 +153,12 @@ export function createCheckout({
   async function paymentRequest(input, session = null) {
     const order = await Order.findById(input.orderId).session(session).lean();
     if (!order) throw missingOrder();
+    if ((order.paymentProvider ?? "mock") !== (input.provider ?? "mock"))
+      throw fail(
+        409,
+        "PAYMENT_PROVIDER_MISMATCH",
+        "This order uses a different payment provider.",
+      );
     const amount = input.amount ?? order.amount;
     const requestFingerprint = fingerprint([
       String(order._id),
@@ -172,6 +181,9 @@ export function createCheckout({
       eventId: order.eventId,
       orderId: order._id,
       providerRef: input.providerRef,
+      provider: input.provider ?? "mock",
+      gatewayPaymentId: input.gatewayPaymentId,
+      currency: order.currency,
       requestFingerprint,
       outcome: input.outcome,
       amount,
@@ -361,6 +373,25 @@ export function createCheckout({
       ],
       { session },
     );
+    if (input.provider === "razorpay") {
+      const receipt =
+        "qt_rf_" + fingerprint([input.gatewayPaymentId]).slice(0, 32);
+      await GatewayRefund.create(
+        [
+          {
+            _id: input.gatewayPaymentId,
+            orderId: order._id,
+            receipt,
+            amount,
+            currency: order.currency,
+            reason: refundReason,
+            status: "requested",
+            nextCheckAt: now,
+          },
+        ],
+        { session },
+      );
+    }
     const closed =
       order.status === "pending"
         ? await closeOrder(

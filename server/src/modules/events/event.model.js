@@ -13,6 +13,7 @@ export const publishedStatuses = [
 export const eventSchema = new Schema(
   {
     organizerId: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+    staffIds: [{ type: Schema.Types.ObjectId, ref: "User" }],
     title: { type: String, required: true },
     description: { type: String, required: true },
     venue: { type: String, required: true },
@@ -55,3 +56,4 @@ eventSchema.index({ status: 1, lobbyOpensAt: 1 });
 eventSchema.index({ status: 1, startsAt: 1 });
 eventSchema.index({ organizerId: 1, updatedAt: -1, _id: -1 });
 eventSchema.index({ isSimulation: 1, startsAt: 1, _id: 1 });
+eventSchema.index({ staffIds: 1, startsAt: -1 });

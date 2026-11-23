@@ -16,6 +16,7 @@ import { SessionProvider } from "../auth/session.jsx";
 import { BookingPage } from "./BookingPage.jsx";
 import { CheckoutPage } from "./CheckoutPage.jsx";
 import { TicketsPage } from "./TicketsPage.jsx";
+import { openRazorpay } from "./razorpay.js";
 
 vi.mock("../../lib/api.js", async (original) => ({
   ...(await original()),
@@ -25,6 +26,7 @@ vi.mock("../../lib/api.js", async (original) => ({
 vi.mock("qrcode", () => ({
   default: { toDataURL: vi.fn(async () => "data:image/png;base64,test") },
 }));
+vi.mock("./razorpay.js", () => ({ openRazorpay: vi.fn() }));
 
 const user = {
   id: "guest",
@@ -328,6 +330,93 @@ test("checkout reconciles an unresolved payment through order status without res
   expect(
     api.mock.calls.filter(([path]) => path === "/orders/order/mock"),
   ).toHaveLength(1);
+});
+
+test("Razorpay returns to pending verification and refresh restores only the recorded state", async () => {
+  let paid = false;
+  let started = false;
+  openRazorpay.mockResolvedValue({
+    razorpay_order_id: "order_fixture",
+    razorpay_payment_id: "pay_fixture",
+    razorpay_signature: "fixture-signature",
+    outside: "do not forward",
+  });
+  api.mockImplementation(async (path) => {
+    if (path === "/me") return { user };
+    if (path === "/orders/order/razorpay") {
+      started = true;
+      return {
+        checkout: {
+          keyId: "rzp_test_fixture",
+          orderId: "order_fixture",
+          amount: order.amount,
+          currency: "INR",
+        },
+      };
+    }
+    if (path.endsWith("/verify"))
+      throw new ApiError("Verification pending.", 503);
+    if (path === "/orders/order")
+      return {
+        provider: "razorpay",
+        gatewayEnabled: true,
+        serverTime,
+        holdActive: !paid,
+        order: { ...order, status: paid ? "paid" : "pending" },
+        payment: { hasAttempt: started },
+      };
+    throw new Error("Unexpected fixture request");
+  });
+  show("/checkout/order", "/checkout/:id", <CheckoutPage />);
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Pay with Razorpay Test Mode" }),
+  );
+  await screen.findByText("Verification pending.");
+  expect(screen.queryByRole("link", { name: "View my tickets" })).toBeNull();
+  expect(api).toHaveBeenCalledWith(
+    "/orders/order/razorpay/verify",
+    expect.objectContaining({
+      method: "POST",
+      body: {
+        razorpay_order_id: "order_fixture",
+        razorpay_payment_id: "pay_fixture",
+        razorpay_signature: "fixture-signature",
+      },
+    }),
+  );
+  cleanup();
+  show("/checkout/order", "/checkout/:id", <CheckoutPage />);
+  const read = await screen.findByRole("button", {
+    name: "Check booking status",
+  });
+  expect(
+    screen.queryByRole("heading", { name: "Booking confirmed" }),
+  ).toBeNull();
+  paid = true;
+  fireEvent.click(read);
+  await screen.findByRole("heading", { name: "Booking confirmed" });
+  expect(
+    api.mock.calls.filter(([path]) => path === "/orders/order/razorpay"),
+  ).toHaveLength(1);
+});
+
+test("a pending Razorpay refund is distinct from a processed refund", async () => {
+  api.mockImplementation(async (path) =>
+    path === "/me"
+      ? { user }
+      : {
+          provider: "razorpay",
+          gatewayEnabled: true,
+          serverTime,
+          holdActive: false,
+          order: { ...order, status: "failed", failureReason: "superseded" },
+          payment: { status: "refund_required", refund: { status: "pending" } },
+        },
+  );
+  show("/checkout/order", "/checkout/:id", <CheckoutPage />);
+  await screen.findByText("Razorpay is processing the test refund.");
+  expect(screen.queryByText("Razorpay processed the test refund.")).toBeNull();
+  expect(screen.queryByRole("link", { name: "View my tickets" })).toBeNull();
 });
 
 test("My tickets displays the server's confirmed seat, order link and QR", async () => {

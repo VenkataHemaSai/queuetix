@@ -1,10 +1,11 @@
 import express, { Router } from "express";
-import { rateLimit } from "express-rate-limit";
 import { z } from "zod";
 import { validate } from "../../lib/http.js";
+import { requestLimit } from "../../lib/rate-limit.js";
 import { eventId, pageInput } from "../events/event.validation.js";
 import { fail } from "./rules.js";
 import { signPayload, validSignature } from "./signatures.js";
+import { readRazorpayStatus } from "../payments/razorpay.js";
 
 const key = z.string().trim().min(1).max(128);
 const seatIds = z.array(eventId).min(1).max(4);
@@ -114,7 +115,15 @@ export function bookingWebhooks(router, booking, secret) {
   };
 }
 
-export function bookingRoutes(booking, session, mockCallback, devTools) {
+export function bookingRoutes(
+  booking,
+  session,
+  mockCallback,
+  devTools,
+  clock,
+  models,
+  gatewayEnabled,
+) {
   const router = Router();
   const user = (request) => request.user._id;
   const id = (request) => validate(eventId, request.params.id);
@@ -126,16 +135,10 @@ export function bookingRoutes(booking, session, mockCallback, devTools) {
       next();
     },
   ];
-  const holdLimit = rateLimit({
-    windowMs: 60_000,
+  const holdLimit = requestLimit(clock, {
     limit: 20,
-    standardHeaders: "draft-8",
-    legacyHeaders: false,
-    keyGenerator: (request) => String(user(request)),
-    handler: (_request, _response, next) =>
-      next(
-        fail(429, "RATE_LIMITED", "Too many hold changes. Try again shortly."),
-      ),
+    key: (request) => String(user(request)),
+    message: "Too many hold changes. Try again shortly.",
   });
 
   if (devTools)
@@ -243,7 +246,14 @@ export function bookingRoutes(booking, session, mockCallback, devTools) {
     ]);
     response.json({
       order: orderView(order),
-      payment: paymentView(payment),
+      payment:
+        order.paymentProvider === "razorpay"
+          ? await readRazorpayStatus(models, order, payment)
+          : paymentView(payment),
+      ...(order.paymentProvider === "razorpay" && {
+        provider: "razorpay",
+        gatewayEnabled,
+      }),
       ...checkout,
     });
   });

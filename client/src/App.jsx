@@ -60,6 +60,16 @@ const TicketsPage = lazy(() =>
     default: TicketsPage,
   })),
 );
+const Dashboard = lazy(() =>
+  import("./features/operations/Dashboard.jsx").then(({ Dashboard }) => ({
+    default: Dashboard,
+  })),
+);
+const StaffScanner = lazy(() =>
+  import("./features/operations/Scanner.jsx").then(({ StaffScanner }) => ({
+    default: StaffScanner,
+  })),
+);
 
 function Header({ smoke }) {
   const { status, user } = useSession();
@@ -109,6 +119,18 @@ function Header({ smoke }) {
               My tickets
             </NavLink>
           )}
+          {signedIn &&
+            !user.isGuest &&
+            ["organizer", "admin"].includes(user.role) && (
+              <NavLink to="/operations/events" onClick={close}>
+                Operations
+              </NavLink>
+            )}
+          {signedIn && !user.isGuest && user.role === "staff" && (
+            <NavLink to="/staff/scanner" onClick={close}>
+              Staff scanner
+            </NavLink>
+          )}
           {status !== "loading" && (
             <NavLink
               to={signedIn || status === "error" ? "/account" : "/login"}
@@ -134,17 +156,21 @@ export function App() {
   useEffect(() => {
     const page = smoke
       ? "Service checks"
-      : pathname.startsWith("/organizer")
-        ? "Manage events"
-        : pathname.startsWith("/checkout/")
-          ? "Checkout"
-          : pathname === "/tickets"
-            ? "My tickets"
-            : pathname === "/login"
-              ? "Sign in"
-              : pathname === "/account"
-                ? "Account"
-                : "Events";
+      : pathname.startsWith("/operations/")
+        ? "Event operations"
+        : pathname === "/staff/scanner"
+          ? "Staff scanner"
+          : pathname.startsWith("/organizer")
+            ? "Manage events"
+            : pathname.startsWith("/checkout/")
+              ? "Checkout"
+              : pathname === "/tickets"
+                ? "My tickets"
+                : pathname === "/login"
+                  ? "Sign in"
+                  : pathname === "/account"
+                    ? "Account"
+                    : "Events";
     document.title = `${page} | ${PRODUCT_NAME}`;
   }, [pathname, smoke]);
   return (
@@ -168,6 +194,9 @@ export function App() {
           <Route path="/events/:id/queue" element={<WaitingRoom />} />
           <Route path="/checkout/:id" element={<CheckoutPage />} />
           <Route path="/tickets" element={<TicketsPage />} />
+          <Route path="/staff/scanner" element={<StaffScanner />} />
+          <Route path="/operations/events" element={<Dashboard />} />
+          <Route path="/operations/events/:id" element={<Dashboard detail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/account" element={<Account />} />
           <Route path="/organizer/events" element={<OrganizerList />} />

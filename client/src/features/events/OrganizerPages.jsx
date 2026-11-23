@@ -14,6 +14,10 @@ import {
 import { Empty, Failure, Loading, Pagination } from "../../ui.jsx";
 import { OrganizerOnly } from "../auth/AuthPages.jsx";
 import { useSession } from "../auth/session.jsx";
+import {
+  EventMetricValues,
+  useEventMetrics,
+} from "../operations/EventMetrics.jsx";
 import { SeatMap } from "./SeatMap.jsx";
 import {
   currencyDigits,
@@ -48,6 +52,51 @@ function toMinor(value, currency) {
   return Number.isSafeInteger(amount) && amount <= 100_000_000 ? amount : null;
 }
 
+function OrganizerOperationsSummary({ events }) {
+  const [selectedId, setSelectedId] = useState("");
+  const selected = events.find(({ id }) => id === selectedId) ?? events[0];
+  const query = useEventMetrics(selected.id);
+  return (
+    <section className="ops-summary" aria-labelledby="ops-summary-heading">
+      <div className="ops-summary-heading">
+        <h2 id="ops-summary-heading">Operations summary</h2>
+        {events.length > 1 ? (
+          <label>
+            Published event
+            <select
+              value={selected.id}
+              onChange={(event) => setSelectedId(event.target.value)}
+            >
+              {events.map(({ id, title }) => (
+                <option key={id} value={id}>
+                  {title}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <p>{selected.title}</p>
+        )}
+      </div>
+      {query.isPending && <Loading>Loading event metrics…</Loading>}
+      {query.isError && (
+        <Failure error={query.error} retry={() => query.refetch()} />
+      )}
+      {query.isSuccess && (
+        <>
+          <EventMetricValues values={query.data.metrics} />
+          <p className="support">
+            Last updated{" "}
+            <time dateTime={query.data.asOf}>
+              {formatDate(query.data.asOf, selected.timeZone)}
+            </time>
+          </p>
+        </>
+      )}
+    </section>
+  );
+}
+
 function OwnedList() {
   const { user, request } = useSession();
   const [params] = useSearchParams();
@@ -57,6 +106,8 @@ function OwnedList() {
     queryFn: ({ signal }) =>
       request(`/organizer/events?page=${page}`, { signal }),
   });
+  const published =
+    list.data?.events.filter(({ status }) => status !== "draft") ?? [];
   return (
     <main id="main-content" className="shell product-page">
       <div className="page-top">
@@ -71,6 +122,9 @@ function OwnedList() {
       )}
       {list.isSuccess && (
         <>
+          {published.length > 0 && (
+            <OrganizerOperationsSummary events={published} />
+          )}
           {list.data.events.length === 0 ? (
             <Empty title="No events yet">
               Create a draft to set your event details and seating.
@@ -87,12 +141,23 @@ function OwnedList() {
                       {formatDate(event.startsAt, event.timeZone)}
                     </p>
                   </div>
-                  <div className="event-labels">
-                    <span className="status-tag">
-                      {statusNames[event.status]}
-                    </span>
-                    {event.isDemo && (
-                      <span className="status-tag">Demo event</span>
+                  <div className="actions">
+                    <div className="event-labels">
+                      <span className="status-tag">
+                        {statusNames[event.status]}
+                      </span>
+                      {event.isDemo && (
+                        <span className="status-tag">Demo event</span>
+                      )}
+                    </div>
+                    {event.status !== "draft" && (
+                      <Link
+                        className="secondary-action"
+                        to={`/operations/events/${event.id}`}
+                        aria-label={`View Operations for ${event.title}`}
+                      >
+                        View Operations
+                      </Link>
                     )}
                   </div>
                 </li>
@@ -554,10 +619,18 @@ function EditOrCreate() {
           )}
         </>
       )}
-      {event && event.status !== "draft" && (
+      {record.isSuccess && event.status !== "draft" && (
         <div className="publish-panel">
           <p role="status">Published · {event.totalSeats} seats</p>
-          <Link to={`/events/${event.id}`}>View public event</Link>
+          <div className="actions">
+            <Link
+              className="secondary-action"
+              to={`/operations/events/${event.id}`}
+            >
+              View Operations
+            </Link>
+            <Link to={`/events/${event.id}`}>View public event</Link>
+          </div>
         </div>
       )}
     </main>

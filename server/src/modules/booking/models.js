@@ -23,6 +23,7 @@ const pass = new Schema({
 pass.index({ eventId: 1, userId: 1 }, active);
 pass.index({ status: 1, expiresAt: 1 });
 pass.index({ eventId: 1, status: 1, expiresAt: 1 });
+pass.index({ eventId: 1, issuedAt: 1 });
 
 const quota = new Schema({
   ...owner,
@@ -66,6 +67,7 @@ const order = new Schema(
     seatLines: [line],
     amount,
     currency: string,
+    paymentProvider: { ...state(["mock", "razorpay"]), immutable: true },
     idempotencyKey: string,
     requestFingerprint: string,
     status: state(["pending", "paid", "failed"]),
@@ -93,6 +95,9 @@ const payment = new Schema({
   eventId: ref,
   orderId: ref,
   providerRef: string,
+  provider: { type: String, enum: ["mock", "razorpay"] },
+  gatewayPaymentId: String,
+  currency: String,
   requestFingerprint: string,
   outcome: state(["succeeded", "failed"]),
   status: state(["processed", "refunded", "failed"]),
@@ -111,9 +116,11 @@ const ticket = new Schema({
   status: state(["valid", "used"]),
   issuedAt: date,
   scannedAt: Date,
+  scannedBy: Schema.Types.ObjectId,
 });
 ticket.index({ eventId: 1, seatId: 1 }, { unique: true });
 ticket.index({ userId: 1, issuedAt: -1, _id: -1 });
+ticket.index({ eventId: 1, status: 1, scannedAt: -1, _id: -1 });
 
 const audit = new Schema(
   {

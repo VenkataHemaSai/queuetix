@@ -92,6 +92,14 @@ function TicketList() {
                       {formatDate(ticket.event.startsAt, ticket.event.timeZone)}
                     </time>
                   </p>
+                  {ticket.status === "used" && ticket.scannedAt && (
+                    <p className="support">
+                      Checked in{" "}
+                      <time dateTime={ticket.scannedAt}>
+                        {formatDate(ticket.scannedAt, ticket.event.timeZone)}
+                      </time>
+                    </p>
+                  )}
                   <dl className="facts">
                     <div>
                       <dt>Seat</dt>
@@ -115,7 +123,12 @@ function TicketList() {
                       </dd>
                     </div>
                   </dl>
-                  <TicketQr key={ticket.qrPayload} payload={ticket.qrPayload} />
+                  {ticket.status !== "used" && (
+                    <TicketQr
+                      key={ticket.qrPayload}
+                      payload={ticket.qrPayload}
+                    />
+                  )}
                 </article>
               ))}
             </div>
