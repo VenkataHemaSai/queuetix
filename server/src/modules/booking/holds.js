@@ -278,16 +278,17 @@ export function createHolds({
     });
   }
 
-  async function sweepExpired() {
+  async function sweepExpired(eventId) {
     const now = clock.now();
-    const overdue = Hold.find({ ...active, expiresAt: { $lte: now } })
+    const scope = eventId ? { eventId } : {};
+    const overdue = Hold.find({ ...scope, ...active, expiresAt: { $lte: now } })
       .select("_id")
       .lean()
       .cursor();
     for await (const hold of overdue)
       await transaction((txn) => retireHold(hold._id, "expired", txn));
     await Pass.updateMany(
-      { ...active, expiresAt: { $lte: now } },
+      { ...scope, ...active, expiresAt: { $lte: now } },
       { $set: { status: "expired" } },
     );
   }

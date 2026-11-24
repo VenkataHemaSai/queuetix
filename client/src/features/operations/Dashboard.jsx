@@ -5,6 +5,7 @@ import { Empty, Failure, Loading, Pagination } from "../../ui.jsx";
 import { useSession } from "../auth/session.jsx";
 import { formatDate, pageNumber, statusNames } from "../events/presentation.js";
 import { OperationsAccess } from "./access.jsx";
+import { Simulation } from "./Simulation.jsx";
 import { EventMetricValues, useEventMetrics } from "./EventMetrics.jsx";
 
 const roles = ["organizer", "admin"];
@@ -21,6 +22,9 @@ function EventList() {
   return (
     <main id="main-content" className="shell product-page ops-page">
       <h1>Event operations</h1>
+      {user.role === "admin" && (
+        <Simulation userId={user.id} request={request} />
+      )}
       {query.isPending && <Loading>Loading events…</Loading>}
       {query.isError && (
         <Failure error={query.error} retry={() => query.refetch()} />

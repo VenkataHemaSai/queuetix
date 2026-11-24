@@ -13,6 +13,7 @@ import { mongoDiagnostic } from "./lib/diagnostic.js";
 import { initializeModels } from "./modules/models.js";
 import { createQueueRuntime } from "./modules/queue/index.js";
 import { startQueueJobs } from "./modules/queue/jobs.js";
+import { simulationWorker } from "./modules/simulation/admin.js";
 import {
   createRazorpay,
   startRazorpayJobs,
@@ -85,6 +86,7 @@ async function start() {
       clock,
       config: env.razorpay,
     });
+  const simulations = runtime && simulationWorker(env.mongoUri);
   const app = createApp({
     clientOrigins: env.clientOrigins,
     clock,
@@ -96,11 +98,13 @@ async function start() {
       booking: runtime?.booking,
       queue: runtime?.queue,
       razorpay,
+      simulations,
     },
   });
   const host = env.nodeEnv === "production" ? "0.0.0.0" : "localhost";
   const server = app.listen(env.port, host);
   await once(server, "listening");
+  if (simulations) server.once("close", () => simulations.close());
   if (runtime) {
     const stopJobs = startQueueJobs(runtime, (error, context) => {
       console.error(

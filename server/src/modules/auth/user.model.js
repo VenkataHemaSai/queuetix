@@ -7,6 +7,8 @@ export const userSchema = new Schema(
     email: { type: String, required: true },
     name: { type: String, required: true },
     googleId: String,
+    isBot: Boolean,
+    simRunId: String,
     role: { type: String, enum: roles, default: "attendee", required: true },
     isGuest: { type: Boolean, default: false, required: true },
   },

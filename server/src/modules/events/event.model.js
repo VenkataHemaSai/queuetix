@@ -46,6 +46,7 @@ export const eventSchema = new Schema(
     totalSeats: { type: Number, default: 0 },
     isDemo: { type: Boolean, default: false },
     isSimulation: { type: Boolean, default: false },
+    simRunId: String,
     revision: { type: Number, default: 0 },
   },
   { timestamps: true },

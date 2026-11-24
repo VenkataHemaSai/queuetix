@@ -23,6 +23,7 @@ export function createQueueService({
   transaction,
   presence,
   publish,
+  simulation = false,
 }) {
   const admissionTimes = new Map();
   const joining = new Map();
@@ -30,7 +31,7 @@ export function createQueueService({
     const event = await Event.findOne({
       _id: id,
       status: { $ne: "draft" },
-      isSimulation: false,
+      isSimulation: simulation,
     })
       .session(session)
       .lean();

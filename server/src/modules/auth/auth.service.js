@@ -58,7 +58,10 @@ export function createAuthService({
     };
   }
 
-  async function authenticate(header) {
+  async function authenticate(
+    header,
+    lookup = (id) => User.findById(id).lean(),
+  ) {
     const token = /^Bearer ([\w.-]+)$/i.exec(header ?? "")?.[1];
     if (!token)
       throw new HttpError(401, "AUTH_REQUIRED", "Sign in to continue.");
@@ -95,7 +98,7 @@ export function createAuthService({
         "Your session is invalid. Sign in again.",
       );
     }
-    const account = await User.findById(claims.sub).lean();
+    const account = await lookup(claims.sub);
     if (
       !account ||
       !roles.includes(account.role) ||

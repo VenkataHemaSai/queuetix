@@ -1,0 +1,8 @@
+{
+  "users": 2000,
+  "seats": 500,
+  "columns": 20,
+  "aisleAfter": 10,
+  "maxActive": 10,
+  "perUser": 2
+}

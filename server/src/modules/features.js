@@ -9,6 +9,7 @@ import { bookingRoutes, bookingWebhooks } from "./booking/routes.js";
 import { queueRoutes } from "./queue/routes.js";
 import { dashboardRoutes } from "./operations/dashboard.js";
 import { scannerRoutes } from "./operations/scanner.js";
+import { simulationRoutes } from "./simulation/admin.js";
 import { createRazorpay } from "./payments/razorpay.js";
 import { razorpayRoutes, registerRazorpayWebhook } from "./payments/routes.js";
 
@@ -21,6 +22,7 @@ export function featureRoutes(
     booking: initializedBooking,
     queue,
     razorpay,
+    simulations,
   },
   clock,
 ) {
@@ -79,6 +81,7 @@ export function featureRoutes(
   });
   const session = requireSession(auth);
   router.use(authRoutes(auth, session));
+  router.use(simulationRoutes(simulations, auth));
   router.use(
     eventRoutes(createEventService({ ...models, connection, clock }), session),
   );

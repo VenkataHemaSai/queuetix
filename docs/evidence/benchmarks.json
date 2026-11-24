@@ -1,0 +1,959 @@
+{
+  "f1": {
+    "startedAt": "2026-11-24T12:44:57.829Z",
+    "node": "v22.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "database": "MongoMemoryReplSet 7.0.24",
+    "config": {
+      "users": 200,
+      "seats": 40,
+      "columns": 10,
+      "aisleAfter": 4,
+      "maxActive": 10,
+      "perUser": 2,
+      "mode": "service",
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 20,
+      "streams": 100
+    },
+    "result": {
+      "users": 200,
+      "seats": 40,
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 20,
+      "maxActive": 10,
+      "proof": true,
+      "holdAttempts": 110,
+      "conflicts": 90,
+      "conflictRetries": 90,
+      "abandonments": 0,
+      "failedPayments": 0,
+      "orderingViolations": 0,
+      "peakActivePasses": 10,
+      "peakWorkers": 10,
+      "timeline": [
+        {
+          "virtualSeconds": 1,
+          "wallMs": 5125,
+          "admitted": 10,
+          "waiting": 190
+        },
+        {
+          "virtualSeconds": 602,
+          "wallMs": 8475,
+          "admitted": 10,
+          "waiting": 180
+        }
+      ],
+      "unexpectedErrors": [],
+      "terminal": {
+        "expired_soldout": 180,
+        "completed": 20
+      },
+      "completedUsers": 200,
+      "buyers": 20,
+      "paidSeatCount": 40,
+      "soldSeats": 40,
+      "tickets": 40,
+      "distinctTicketSeats": 40,
+      "expiredHolds": 0,
+      "integrity": [],
+      "join": {
+        "samples": 200,
+        "p50Ms": 216.65,
+        "p95Ms": 415.15
+      },
+      "hold": {
+        "samples": 110,
+        "p50Ms": 121.52,
+        "p95Ms": 451.92
+      },
+      "virtualSeconds": 602,
+      "failures": [],
+      "cleanup": "complete",
+      "wallMs": 9811
+    }
+  },
+  "f1b": {
+    "startedAt": "2026-11-24T12:45:13.762Z",
+    "node": "v22.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "database": "MongoMemoryReplSet 7.0.24",
+    "config": {
+      "users": 200,
+      "seats": 40,
+      "columns": 10,
+      "aisleAfter": 4,
+      "maxActive": 10,
+      "perUser": 2,
+      "mode": "service",
+      "profile": "mixed",
+      "seed": "queue-proof",
+      "concurrency": 20,
+      "streams": 100
+    },
+    "result": {
+      "users": 200,
+      "seats": 40,
+      "profile": "mixed",
+      "seed": "queue-proof",
+      "concurrency": 20,
+      "maxActive": 10,
+      "proof": true,
+      "holdAttempts": 144,
+      "conflicts": 120,
+      "conflictRetries": 120,
+      "abandonments": 3,
+      "failedPayments": 1,
+      "orderingViolations": 0,
+      "peakActivePasses": 10,
+      "peakWorkers": 10,
+      "timeline": [
+        {
+          "virtualSeconds": 1,
+          "wallMs": 7040,
+          "admitted": 10,
+          "waiting": 190
+        },
+        {
+          "virtualSeconds": 602,
+          "wallMs": 10087,
+          "admitted": 10,
+          "waiting": 180
+        },
+        {
+          "virtualSeconds": 1203,
+          "wallMs": 13183,
+          "admitted": 10,
+          "waiting": 170
+        }
+      ],
+      "unexpectedErrors": [],
+      "terminal": {
+        "expired": 4,
+        "completed": 20,
+        "expired_soldout": 176
+      },
+      "completedUsers": 200,
+      "buyers": 20,
+      "paidSeatCount": 40,
+      "soldSeats": 40,
+      "tickets": 40,
+      "distinctTicketSeats": 40,
+      "expiredHolds": 3,
+      "integrity": [],
+      "join": {
+        "samples": 200,
+        "p50Ms": 329.66,
+        "p95Ms": 627
+      },
+      "hold": {
+        "samples": 144,
+        "p50Ms": 224.58,
+        "p95Ms": 312.32
+      },
+      "virtualSeconds": 1203,
+      "failures": [],
+      "cleanup": "complete",
+      "wallMs": 14919
+    }
+  },
+  "f2": {
+    "startedAt": "2026-11-24T12:45:43.675Z",
+    "node": "v22.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "database": "MongoMemoryReplSet 7.0.24",
+    "config": {
+      "users": 2000,
+      "seats": 500,
+      "columns": 20,
+      "aisleAfter": 10,
+      "maxActive": 10,
+      "perUser": 2,
+      "mode": "service",
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 200,
+      "streams": 100
+    },
+    "result": {
+      "users": 2000,
+      "seats": 500,
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 200,
+      "maxActive": 10,
+      "proof": true,
+      "holdAttempts": 1375,
+      "conflicts": 1125,
+      "conflictRetries": 1125,
+      "abandonments": 0,
+      "failedPayments": 0,
+      "orderingViolations": 0,
+      "peakActivePasses": 10,
+      "peakWorkers": 10,
+      "timeline": [
+        {
+          "virtualSeconds": 1,
+          "wallMs": 53334,
+          "admitted": 10,
+          "waiting": 1990
+        },
+        {
+          "virtualSeconds": 602,
+          "wallMs": 56886,
+          "admitted": 10,
+          "waiting": 1980
+        },
+        {
+          "virtualSeconds": 1203,
+          "wallMs": 60020,
+          "admitted": 10,
+          "waiting": 1970
+        },
+        {
+          "virtualSeconds": 1804,
+          "wallMs": 63204,
+          "admitted": 10,
+          "waiting": 1960
+        },
+        {
+          "virtualSeconds": 2405,
+          "wallMs": 66446,
+          "admitted": 10,
+          "waiting": 1950
+        },
+        {
+          "virtualSeconds": 3006,
+          "wallMs": 68890,
+          "admitted": 10,
+          "waiting": 1940
+        },
+        {
+          "virtualSeconds": 3607,
+          "wallMs": 71861,
+          "admitted": 10,
+          "waiting": 1930
+        },
+        {
+          "virtualSeconds": 4208,
+          "wallMs": 74822,
+          "admitted": 10,
+          "waiting": 1920
+        },
+        {
+          "virtualSeconds": 4809,
+          "wallMs": 77690,
+          "admitted": 10,
+          "waiting": 1910
+        },
+        {
+          "virtualSeconds": 5410,
+          "wallMs": 80725,
+          "admitted": 10,
+          "waiting": 1900
+        },
+        {
+          "virtualSeconds": 6011,
+          "wallMs": 83337,
+          "admitted": 10,
+          "waiting": 1890
+        },
+        {
+          "virtualSeconds": 6612,
+          "wallMs": 86384,
+          "admitted": 10,
+          "waiting": 1880
+        },
+        {
+          "virtualSeconds": 7213,
+          "wallMs": 89664,
+          "admitted": 10,
+          "waiting": 1870
+        },
+        {
+          "virtualSeconds": 7814,
+          "wallMs": 93361,
+          "admitted": 10,
+          "waiting": 1860
+        },
+        {
+          "virtualSeconds": 8415,
+          "wallMs": 97248,
+          "admitted": 10,
+          "waiting": 1850
+        },
+        {
+          "virtualSeconds": 9016,
+          "wallMs": 101373,
+          "admitted": 10,
+          "waiting": 1840
+        },
+        {
+          "virtualSeconds": 9617,
+          "wallMs": 104361,
+          "admitted": 10,
+          "waiting": 1830
+        },
+        {
+          "virtualSeconds": 10218,
+          "wallMs": 107691,
+          "admitted": 10,
+          "waiting": 1820
+        },
+        {
+          "virtualSeconds": 10819,
+          "wallMs": 110017,
+          "admitted": 10,
+          "waiting": 1810
+        },
+        {
+          "virtualSeconds": 11420,
+          "wallMs": 113460,
+          "admitted": 10,
+          "waiting": 1800
+        },
+        {
+          "virtualSeconds": 12021,
+          "wallMs": 116394,
+          "admitted": 10,
+          "waiting": 1790
+        },
+        {
+          "virtualSeconds": 12622,
+          "wallMs": 119336,
+          "admitted": 10,
+          "waiting": 1780
+        },
+        {
+          "virtualSeconds": 13223,
+          "wallMs": 122305,
+          "admitted": 10,
+          "waiting": 1770
+        },
+        {
+          "virtualSeconds": 13824,
+          "wallMs": 125633,
+          "admitted": 10,
+          "waiting": 1760
+        },
+        {
+          "virtualSeconds": 14425,
+          "wallMs": 129212,
+          "admitted": 10,
+          "waiting": 1750
+        }
+      ],
+      "unexpectedErrors": [],
+      "terminal": {
+        "completed": 250,
+        "expired_soldout": 1750
+      },
+      "completedUsers": 2000,
+      "buyers": 250,
+      "paidSeatCount": 500,
+      "soldSeats": 500,
+      "tickets": 500,
+      "distinctTicketSeats": 500,
+      "expiredHolds": 0,
+      "integrity": [],
+      "join": {
+        "samples": 2000,
+        "p50Ms": 2396.13,
+        "p95Ms": 5072.92
+      },
+      "hold": {
+        "samples": 1375,
+        "p50Ms": 181.2,
+        "p95Ms": 293.66
+      },
+      "virtualSeconds": 14425,
+      "failures": [],
+      "cleanup": "complete",
+      "wallMs": 134174
+    }
+  },
+  "f2b": {
+    "startedAt": "2026-11-24T12:48:24.994Z",
+    "node": "v22.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "database": "MongoMemoryReplSet 7.0.24",
+    "config": {
+      "users": 2000,
+      "seats": 500,
+      "columns": 20,
+      "aisleAfter": 10,
+      "maxActive": 10,
+      "perUser": 2,
+      "mode": "service",
+      "profile": "mixed",
+      "seed": "queue-proof",
+      "concurrency": 200,
+      "streams": 100
+    },
+    "result": {
+      "users": 2000,
+      "seats": 500,
+      "profile": "mixed",
+      "seed": "queue-proof",
+      "concurrency": 200,
+      "maxActive": 10,
+      "proof": true,
+      "holdAttempts": 1968,
+      "conflicts": 1610,
+      "conflictRetries": 1610,
+      "abandonments": 60,
+      "failedPayments": 48,
+      "orderingViolations": 0,
+      "peakActivePasses": 10,
+      "peakWorkers": 10,
+      "timeline": [
+        {
+          "virtualSeconds": 1,
+          "wallMs": 51962,
+          "admitted": 10,
+          "waiting": 1990
+        },
+        {
+          "virtualSeconds": 602,
+          "wallMs": 56828,
+          "admitted": 10,
+          "waiting": 1980
+        },
+        {
+          "virtualSeconds": 1203,
+          "wallMs": 61098,
+          "admitted": 10,
+          "waiting": 1970
+        },
+        {
+          "virtualSeconds": 1804,
+          "wallMs": 64995,
+          "admitted": 10,
+          "waiting": 1960
+        },
+        {
+          "virtualSeconds": 2405,
+          "wallMs": 69446,
+          "admitted": 10,
+          "waiting": 1950
+        },
+        {
+          "virtualSeconds": 3006,
+          "wallMs": 73344,
+          "admitted": 10,
+          "waiting": 1940
+        },
+        {
+          "virtualSeconds": 3607,
+          "wallMs": 77010,
+          "admitted": 10,
+          "waiting": 1930
+        },
+        {
+          "virtualSeconds": 4208,
+          "wallMs": 80761,
+          "admitted": 10,
+          "waiting": 1920
+        },
+        {
+          "virtualSeconds": 4809,
+          "wallMs": 84144,
+          "admitted": 10,
+          "waiting": 1910
+        },
+        {
+          "virtualSeconds": 5410,
+          "wallMs": 87795,
+          "admitted": 10,
+          "waiting": 1900
+        },
+        {
+          "virtualSeconds": 6011,
+          "wallMs": 91873,
+          "admitted": 10,
+          "waiting": 1890
+        },
+        {
+          "virtualSeconds": 6612,
+          "wallMs": 95944,
+          "admitted": 10,
+          "waiting": 1880
+        },
+        {
+          "virtualSeconds": 7213,
+          "wallMs": 99847,
+          "admitted": 10,
+          "waiting": 1870
+        },
+        {
+          "virtualSeconds": 7814,
+          "wallMs": 103779,
+          "admitted": 10,
+          "waiting": 1860
+        },
+        {
+          "virtualSeconds": 8415,
+          "wallMs": 107652,
+          "admitted": 10,
+          "waiting": 1850
+        },
+        {
+          "virtualSeconds": 9016,
+          "wallMs": 110178,
+          "admitted": 10,
+          "waiting": 1840
+        },
+        {
+          "virtualSeconds": 9617,
+          "wallMs": 111552,
+          "admitted": 10,
+          "waiting": 1830
+        },
+        {
+          "virtualSeconds": 10218,
+          "wallMs": 112727,
+          "admitted": 10,
+          "waiting": 1820
+        },
+        {
+          "virtualSeconds": 10819,
+          "wallMs": 113710,
+          "admitted": 10,
+          "waiting": 1810
+        },
+        {
+          "virtualSeconds": 11420,
+          "wallMs": 114658,
+          "admitted": 10,
+          "waiting": 1800
+        },
+        {
+          "virtualSeconds": 12021,
+          "wallMs": 115825,
+          "admitted": 10,
+          "waiting": 1790
+        },
+        {
+          "virtualSeconds": 12622,
+          "wallMs": 117416,
+          "admitted": 10,
+          "waiting": 1780
+        },
+        {
+          "virtualSeconds": 13223,
+          "wallMs": 120336,
+          "admitted": 10,
+          "waiting": 1770
+        },
+        {
+          "virtualSeconds": 13824,
+          "wallMs": 124439,
+          "admitted": 10,
+          "waiting": 1760
+        },
+        {
+          "virtualSeconds": 14425,
+          "wallMs": 128982,
+          "admitted": 10,
+          "waiting": 1750
+        },
+        {
+          "virtualSeconds": 15026,
+          "wallMs": 133158,
+          "admitted": 10,
+          "waiting": 1740
+        },
+        {
+          "virtualSeconds": 15627,
+          "wallMs": 137047,
+          "admitted": 10,
+          "waiting": 1730
+        },
+        {
+          "virtualSeconds": 16228,
+          "wallMs": 141340,
+          "admitted": 10,
+          "waiting": 1720
+        },
+        {
+          "virtualSeconds": 16829,
+          "wallMs": 145586,
+          "admitted": 10,
+          "waiting": 1710
+        },
+        {
+          "virtualSeconds": 17430,
+          "wallMs": 149699,
+          "admitted": 10,
+          "waiting": 1700
+        },
+        {
+          "virtualSeconds": 18031,
+          "wallMs": 153792,
+          "admitted": 10,
+          "waiting": 1690
+        },
+        {
+          "virtualSeconds": 18632,
+          "wallMs": 157402,
+          "admitted": 10,
+          "waiting": 1680
+        },
+        {
+          "virtualSeconds": 19233,
+          "wallMs": 161711,
+          "admitted": 10,
+          "waiting": 1670
+        },
+        {
+          "virtualSeconds": 19834,
+          "wallMs": 164979,
+          "admitted": 10,
+          "waiting": 1660
+        },
+        {
+          "virtualSeconds": 20435,
+          "wallMs": 169166,
+          "admitted": 10,
+          "waiting": 1650
+        },
+        {
+          "virtualSeconds": 21036,
+          "wallMs": 173034,
+          "admitted": 10,
+          "waiting": 1640
+        },
+        {
+          "virtualSeconds": 21637,
+          "wallMs": 175909,
+          "admitted": 4,
+          "waiting": 1636
+        },
+        {
+          "virtualSeconds": 22238,
+          "wallMs": 176563,
+          "admitted": 4,
+          "waiting": 1632
+        }
+      ],
+      "unexpectedErrors": [],
+      "terminal": {
+        "completed": 250,
+        "expired": 115,
+        "expired_soldout": 1635
+      },
+      "completedUsers": 2000,
+      "buyers": 250,
+      "paidSeatCount": 500,
+      "soldSeats": 500,
+      "tickets": 500,
+      "distinctTicketSeats": 500,
+      "expiredHolds": 60,
+      "integrity": [],
+      "join": {
+        "samples": 2000,
+        "p50Ms": 2273.85,
+        "p95Ms": 4990.91
+      },
+      "hold": {
+        "samples": 1968,
+        "p50Ms": 196.62,
+        "p95Ms": 357.45
+      },
+      "virtualSeconds": 22238,
+      "failures": [],
+      "cleanup": "complete",
+      "wallMs": 179496
+    }
+  },
+  "f3": {
+    "startedAt": "2026-11-24T12:51:44.361Z",
+    "node": "v22.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "database": "MongoMemoryReplSet 7.0.24",
+    "config": {
+      "users": 5000,
+      "seats": 500,
+      "columns": 20,
+      "aisleAfter": 10,
+      "maxActive": 10,
+      "perUser": 2,
+      "mode": "service",
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 200,
+      "streams": 100
+    },
+    "result": {
+      "users": 5000,
+      "seats": 500,
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 200,
+      "maxActive": 10,
+      "proof": true,
+      "holdAttempts": 1375,
+      "conflicts": 1125,
+      "conflictRetries": 1125,
+      "abandonments": 0,
+      "failedPayments": 0,
+      "orderingViolations": 0,
+      "peakActivePasses": 10,
+      "peakWorkers": 10,
+      "timeline": [
+        {
+          "virtualSeconds": 1,
+          "wallMs": 141486,
+          "admitted": 10,
+          "waiting": 4990
+        },
+        {
+          "virtualSeconds": 602,
+          "wallMs": 144930,
+          "admitted": 10,
+          "waiting": 4980
+        },
+        {
+          "virtualSeconds": 1203,
+          "wallMs": 148795,
+          "admitted": 10,
+          "waiting": 4970
+        },
+        {
+          "virtualSeconds": 1804,
+          "wallMs": 152059,
+          "admitted": 10,
+          "waiting": 4960
+        },
+        {
+          "virtualSeconds": 2405,
+          "wallMs": 155244,
+          "admitted": 10,
+          "waiting": 4950
+        },
+        {
+          "virtualSeconds": 3006,
+          "wallMs": 158808,
+          "admitted": 10,
+          "waiting": 4940
+        },
+        {
+          "virtualSeconds": 3607,
+          "wallMs": 162493,
+          "admitted": 10,
+          "waiting": 4930
+        },
+        {
+          "virtualSeconds": 4208,
+          "wallMs": 166060,
+          "admitted": 10,
+          "waiting": 4920
+        },
+        {
+          "virtualSeconds": 4809,
+          "wallMs": 169168,
+          "admitted": 10,
+          "waiting": 4910
+        },
+        {
+          "virtualSeconds": 5410,
+          "wallMs": 172456,
+          "admitted": 10,
+          "waiting": 4900
+        },
+        {
+          "virtualSeconds": 6011,
+          "wallMs": 175340,
+          "admitted": 10,
+          "waiting": 4890
+        },
+        {
+          "virtualSeconds": 6612,
+          "wallMs": 177972,
+          "admitted": 10,
+          "waiting": 4880
+        },
+        {
+          "virtualSeconds": 7213,
+          "wallMs": 181051,
+          "admitted": 10,
+          "waiting": 4870
+        },
+        {
+          "virtualSeconds": 7814,
+          "wallMs": 184296,
+          "admitted": 10,
+          "waiting": 4860
+        },
+        {
+          "virtualSeconds": 8415,
+          "wallMs": 188103,
+          "admitted": 10,
+          "waiting": 4850
+        },
+        {
+          "virtualSeconds": 9016,
+          "wallMs": 191696,
+          "admitted": 10,
+          "waiting": 4840
+        },
+        {
+          "virtualSeconds": 9617,
+          "wallMs": 195123,
+          "admitted": 10,
+          "waiting": 4830
+        },
+        {
+          "virtualSeconds": 10218,
+          "wallMs": 198895,
+          "admitted": 10,
+          "waiting": 4820
+        },
+        {
+          "virtualSeconds": 10819,
+          "wallMs": 203979,
+          "admitted": 10,
+          "waiting": 4810
+        },
+        {
+          "virtualSeconds": 11420,
+          "wallMs": 208860,
+          "admitted": 10,
+          "waiting": 4800
+        },
+        {
+          "virtualSeconds": 12021,
+          "wallMs": 213645,
+          "admitted": 10,
+          "waiting": 4790
+        },
+        {
+          "virtualSeconds": 12622,
+          "wallMs": 216796,
+          "admitted": 10,
+          "waiting": 4780
+        },
+        {
+          "virtualSeconds": 13223,
+          "wallMs": 220471,
+          "admitted": 10,
+          "waiting": 4770
+        },
+        {
+          "virtualSeconds": 13824,
+          "wallMs": 224156,
+          "admitted": 10,
+          "waiting": 4760
+        },
+        {
+          "virtualSeconds": 14425,
+          "wallMs": 228481,
+          "admitted": 10,
+          "waiting": 4750
+        }
+      ],
+      "unexpectedErrors": [],
+      "terminal": {
+        "expired_soldout": 4750,
+        "completed": 250
+      },
+      "completedUsers": 5000,
+      "buyers": 250,
+      "paidSeatCount": 500,
+      "soldSeats": 500,
+      "tickets": 500,
+      "distinctTicketSeats": 500,
+      "expiredHolds": 0,
+      "integrity": [],
+      "join": {
+        "samples": 5000,
+        "p50Ms": 2609.16,
+        "p95Ms": 5671.3
+      },
+      "hold": {
+        "samples": 1375,
+        "p50Ms": 201.87,
+        "p95Ms": 348.82
+      },
+      "virtualSeconds": 14425,
+      "failures": [],
+      "cleanup": "complete",
+      "wallMs": 235610
+    }
+  },
+  "http": {
+    "startedAt": "2026-11-24T12:55:56.538Z",
+    "node": "v22.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "database": "MongoMemoryReplSet 7.0.24",
+    "config": {
+      "users": 500,
+      "seats": 10,
+      "columns": 20,
+      "aisleAfter": 10,
+      "maxActive": 10,
+      "perUser": 2,
+      "mode": "http",
+      "profile": "greedy-2",
+      "seed": "queue-proof",
+      "concurrency": 16,
+      "streams": 100
+    },
+    "result": {
+      "users": 500,
+      "completedUsers": 500,
+      "joined": 5,
+      "expected429": 495,
+      "peakStreams": 100,
+      "reconnections": 1,
+      "reconnectedQueueNumber": 3,
+      "connectionFailures": 0,
+      "httpStatuses": {
+        "200": 640,
+        "429": 495
+      },
+      "join": {
+        "samples": 500,
+        "p50Ms": 127.63,
+        "p95Ms": 195.86
+      },
+      "hold": {
+        "samples": 6,
+        "p50Ms": 72.9,
+        "p95Ms": 115.7
+      },
+      "buyers": 5,
+      "tickets": 10,
+      "soldSeats": 10,
+      "paidSeatCount": 10,
+      "terminal": {
+        "completed": 5
+      },
+      "holdAttempts": 6,
+      "failedPayments": 1,
+      "expiredHolds": 0,
+      "abandonments": 0,
+      "orderingViolations": 0,
+      "peakActivePasses": 5,
+      "admissions": [
+        {
+          "elapsedMs": 14846,
+          "count": 5
+        }
+      ],
+      "integrity": [],
+      "unexpectedErrors": [],
+      "failures": [],
+      "wallMs": 18500
+    }
+  }
+}

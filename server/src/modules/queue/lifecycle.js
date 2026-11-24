@@ -179,10 +179,11 @@ export function createQueueLifecycle({
       );
   }
 
-  async function expireEntries() {
+  async function expireEntries(eventId) {
     const now = clock.now();
     // Drive the reconciliation from current admissions, so expired history does not grow the sweep.
     const candidates = QueueEntry.find({
+      ...(eventId && { eventId }),
       status: "admitted",
       passId: { $type: "objectId" },
     })
@@ -333,14 +334,15 @@ export function createQueueLifecycle({
     }
   }
 
-  async function sweep() {
-    await booking.sweepExpired();
-    await expireEntries();
-    await expireDisconnected();
+  async function sweep(eventId) {
+    await booking.sweepExpired(eventId);
+    await expireEntries(eventId);
+    await expireDisconnected(eventId);
   }
 
-  async function expireDisconnected() {
+  async function expireDisconnected(scopedEventId) {
     for (const [eventId, users] of presence.timedOut(clock.now())) {
+      if (scopedEventId && String(scopedEventId) !== String(eventId)) continue;
       for (let index = 0; index < users.length; index += 64) {
         const candidates = await QueueEntry.find({
           eventId,
